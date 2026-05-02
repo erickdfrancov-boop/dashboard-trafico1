@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Tráfico Local</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0f12;
+  --bg2: #13161b;
+  --bg3: #1a1e25;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #7a8090;
+  --text3: #4a5060;
+  --blue: #3a8fff;
+  --blue2: #1a5fcc;
+  --blue-bg: rgba(58,143,255,0.1);
+  --green: #3ecf8e;
+  --green2: #1a9e64;
+  --green-bg: rgba(62,207,142,0.1);
+  --amber: #f5a623;
+  --amber-bg: rgba(245,166,35,0.1);
+  --red: #ff4d6a;
+  --red-bg: rgba(255,77,106,0.1);
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+
+/* LOADER */
+#loader {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  z-index: 999;
+}
+.loader-ring {
+  width: 40px; height: 40px; border: 2px solid var(--border2);
+  border-top-color: var(--blue); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loader-text { font-size: 13px; color: var(--text2); letter-spacing: 0.5px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ERROR */
+#error-box {
+  display: none; position: fixed; inset: 0; background: var(--bg);
+  align-items: center; justify-content: center; z-index: 998;
+}
+.err-card {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-left: 3px solid var(--red); border-radius: var(--radius-lg);
+  padding: 28px 32px; max-width: 440px;
+}
+.err-card h3 { font-size: 15px; color: var(--red); margin-bottom: 8px; }
+.err-card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.err-card code { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); background: var(--bg3); padding: 2px 6px; border-radius: 4px; }
+
+/* LAYOUT */
+#app { display: none; max-width: 1100px; margin: 0 auto; padding: 28px 24px 48px; }
+
+/* HEADER */
+.hdr {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 20px; border-bottom: 0.5px solid var(--border);
+  margin-bottom: 24px;
+}
+.hdr h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.4px; color: var(--text); }
+.hdr-sub { font-size: 12px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green); background: var(--green-bg);
+  padding: 5px 12px; border-radius: 100px; border: 0.5px solid rgba(62,207,142,0.2);
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* SUMMARY STRIP */
+.summary-strip {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.scard {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.scard .sc-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); }
+.scard .sc-val { font-size: 28px; font-weight: 500; line-height: 1; }
+.scard .sc-sub { font-size: 11px; color: var(--text3); }
+.scard.blue .sc-val { color: var(--blue); }
+.scard.green .sc-val { color: var(--green); }
+.scard.amber .sc-val { color: var(--amber); }
+.scard.total .sc-val { color: var(--text); }
+
+/* SPLIT PANELS */
+.panels { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; margin-bottom: 16px; }
+
+/* PANEL */
+.panel {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px 14px; border-bottom: 0.5px solid var(--border);
+}
+.panel-hdr .ph-left { display: flex; align-items: baseline; gap: 10px; }
+.panel-hdr .ph-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); }
+.panel-hdr .ph-count { font-size: 26px; font-weight: 500; line-height: 1; }
+.panel-hdr .ph-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.panel-hdr .ph-badge {
+  font-size: 10px; font-weight: 500; padding: 4px 10px; border-radius: 100px;
+}
+.ph-badge.blue { background: var(--blue-bg); color: var(--blue); border: 0.5px solid rgba(58,143,255,0.25); }
+.ph-badge.green { background: var(--green-bg); color: var(--green); border: 0.5px solid rgba(62,207,142,0.25); }
+
+.mini-kpis { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-bottom: 0.5px solid var(--border); }
+.mk { padding: 12px 14px; border-right: 0.5px solid var(--border); }
+.mk:last-child { border-right: none; }
+.mk .mk-l { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text3); margin-bottom: 4px; }
+.mk .mk-v { font-size: 18px; font-weight: 500; }
+.mk .mk-s { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.panel-body { padding: 14px 18px; }
+.sec-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 10px; }
+
+/* BAR ROWS */
+.br { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bl { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt { flex: 1; background: var(--bg3); border-radius: 3px; height: 6px; overflow: hidden; }
+.bf { height: 6px; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+.bn { font-size: 12px; font-weight: 500; color: var(--text); width: 22px; text-align: right; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+.bp { font-size: 11px; color: var(--text3); width: 34px; text-align: right; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+.more-note { font-size: 11px; color: var(--text3); margin-top: 6px; padding-top: 6px; border-top: 0.5px solid var(--border); }
+
+/* DIVIDER */
+.inner-div { border-top: 0.5px solid var(--border); margin: 12px 0; }
+
+/* OPERATORS TABLE */
+.ops-panel { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; overflow: hidden; }
+.ops-tbl { width: 100%; border-collapse: collapse; }
+.ops-tbl th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text3); text-align: left; padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border); font-weight: 500; background: var(--bg3);
+}
+.ops-tbl th.r { text-align: right; }
+.ops-tbl td { font-size: 12px; color: var(--text); padding: 9px 14px; border-bottom: 0.5px solid var(--border); }
+.ops-tbl td.r { text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; }
+.ops-tbl tr:last-child td { border-bottom: none; }
+.ops-tbl tbody tr:hover td { background: var(--bg3); }
+.av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 500; margin-right: 8px; vertical-align: middle; flex-shrink: 0;
+}
+.av.b { background: var(--blue-bg); color: var(--blue); }
+.av.g { background: var(--green-bg); color: var(--green); }
+.av.a { background: var(--amber-bg); color: var(--amber); }
+.num-imp { color: var(--blue); font-weight: 500; }
+.num-exp { color: var(--green); font-weight: 500; }
+.num-tot { color: var(--text); font-weight: 500; }
+.tag { font-size: 10px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+.tag-b { background: var(--blue-bg); color: var(--blue); }
+.tag-g { background: var(--green-bg); color: var(--green); }
+.tag-a { background: var(--amber-bg); color: var(--amber); }
+.op-bar-wrap { display: flex; gap: 2px; align-items: center; }
+.op-bar-seg { height: 5px; border-radius: 2px; }
+
+/* TREND */
+.trend-panel { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; overflow: hidden; }
+.trend-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0; padding: 16px 18px; }
+.tday { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.td-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; font-family: 'DM Mono', monospace; }
+.td-bar-wrap { width: 100%; height: 70px; background: var(--bg3); border-radius: 6px; display: flex; align-items: flex-end; overflow: hidden; }
+.td-bar { width: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: height 0.8s cubic-bezier(.4,0,.2,1); }
+.td-num { font-size: 11px; font-weight: 500; color: #fff; font-family: 'DM Mono', monospace; }
+.td-val { font-size: 18px; font-weight: 500; font-family: 'DM Mono', monospace; }
+
+/* INSIGHTS */
+.insights { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+.ins { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid var(--border); position: relative; overflow: hidden; }
+.ins::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; }
+.ins.i1::before { background: var(--blue); }
+.ins.i2::before { background: var(--green); }
+.ins.i3::before { background: var(--amber); }
+.ins .il { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 6px; }
+.ins .iv { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.ins .iv strong { color: var(--text); font-weight: 500; }
+
+/* FOOTER */
+.footer { text-align: center; padding-top: 24px; border-top: 0.5px solid var(--border); }
+.footer p { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+#last-updated { color: var(--text2); }
+
+/* FADE IN */
+.fade-in { animation: fadeIn 0.5s ease forwards; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+@media (max-width: 700px) {
+  .panels, .summary-strip, .insights { grid-template-columns: 1fr; }
+  .mini-kpis { grid-template-columns: repeat(3,1fr); }
+  .ops-tbl th:nth-child(5), .ops-tbl td:nth-child(5) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Conectando con AppSheet...</div>
+</div>
+
+<div id="error-box">
+  <div class="err-card">
+    <h3>Error al cargar datos</h3>
+    <p id="error-msg">No se pudo conectar con la API de AppSheet. Verifica que el <code>APP_ID</code> y <code>API_KEY</code> sean correctos y que la API esté habilitada en <strong>Settings → Integrations</strong>.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="hdr fade-in">
+    <div>
+      <h1>Tráfico local — Reporte operativo</h1>
+      <div class="hdr-sub">AppSheet · Importación + Exportación · <span id="date-range">cargando...</span></div>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div>En vivo</div>
+  </div>
+
+  <div class="summary-strip fade-in">
+    <div class="scard blue"><div class="sc-label">Cruces importación</div><div class="sc-val" id="k-imp">—</div><div class="sc-sub">TRANSFER · operación única</div></div>
+    <div class="scard green"><div class="sc-label">Órdenes exportación</div><div class="sc-val" id="k-exp">—</div><div class="sc-sub" id="k-exp-sub">—</div></div>
+    <div class="scard amber"><div class="sc-label">Total movimientos</div><div class="sc-val" id="k-total">—</div><div class="sc-sub" id="k-ops">— operadores activos</div></div>
+    <div class="scard total"><div class="sc-label">Bodega principal</div><div class="sc-val" style="font-size:18px;margin-top:4px" id="k-bodega">—</div><div class="sc-sub" id="k-bodega-sub">—</div></div>
+  </div>
+
+  <div class="panels fade-in">
+    <div class="panel">
+      <div class="panel-hdr">
+        <div>
+          <div class="ph-title">Importación</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
+            <div class="ph-count" style="color:var(--blue)" id="ph-imp">—</div>
+            <div class="ph-sub">cruces totales</div>
+          </div>
+        </div>
+        <span class="ph-badge blue">TRANSFER</span>
+      </div>
+      <div class="mini-kpis">
+        <div class="mk"><div class="mk-l">CJ Cargada</div><div class="mk-v" style="color:var(--blue)" id="mk-cjc">—</div><div class="mk-s" id="mk-cjc-p">—</div></div>
+        <div class="mk"><div class="mk-l">PLT Cargada</div><div class="mk-v" style="color:var(--blue)" id="mk-pltc">—</div><div class="mk-s" id="mk-pltc-p">—</div></div>
+        <div class="mk"><div class="mk-l">Vacías</div><div class="mk-v" id="mk-vac">—</div><div class="mk-s" id="mk-vac-p">—</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="sec-label">Bodegas — top 10</div>
+        <div id="bodega-bars">cargando...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr">
+        <div>
+          <div class="ph-title">Exportación</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
+            <div class="ph-count" style="color:var(--green)" id="ph-exp">—</div>
+            <div class="ph-sub">órdenes totales</div>
+          </div>
+        </div>
+        <span class="ph-badge green">TRANSFER</span>
+      </div>
+      <div class="mini-kpis">
+        <div class="mk"><div class="mk-l">Chrysler</div><div class="mk-v" style="color:var(--green)" id="mk-chr">—</div><div class="mk-s" id="mk-chr-p">—</div></div>
+        <div class="mk"><div class="mk-l">Inmagusa</div><div class="mk-v" style="color:var(--green)" id="mk-inm">—</div><div class="mk-s" id="mk-inm-p">—</div></div>
+        <div class="mk"><div class="mk-l">Otros</div><div class="mk-v" id="mk-otros">—</div><div class="mk-s" id="mk-otros-p">—</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="sec-label">Clientes</div>
+        <div id="cliente-bars">cargando...</div>
+        <div class="inner-div"></div>
+        <div class="sec-label">Destinos</div>
+        <div id="destino-bars">cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trend-panel fade-in">
+    <div class="panel-hdr">
+      <div class="ph-title">Tendencia diaria — Importación</div>
+      <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace" id="trend-sub">—</div>
+    </div>
+    <div class="trend-grid" id="trend-grid">cargando...</div>
+  </div>
+
+  <div class="ops-panel fade-in">
+    <div class="panel-hdr">
+      <div>
+        <div class="ph-title">Operadores — actividad individual</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">IMP + EXP desglosado</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>IMP</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span>EXP</span>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ops-tbl">
+        <thead>
+          <tr>
+            <th style="width:30%">Operador</th>
+            <th class="r">IMP</th>
+            <th class="r">EXP</th>
+            <th class="r">Total</th>
+            <th class="r">Tipo</th>
+            <th>Actividad</th>
+          </tr>
+        </thead>
+        <tbody id="ops-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="insights fade-in">
+    <div class="ins i1"><div class="il">Concentración IMP</div><div class="iv" id="ins1">—</div></div>
+    <div class="ins i2"><div class="il">Concentración EXP</div><div class="iv" id="ins2">—</div></div>
+    <div class="ins i3"><div class="il">Tendencia operativa</div><div class="iv" id="ins3">—</div></div>
+  </div>
+
+  <div class="footer fade-in">
+    <p>Última actualización: <span id="last-updated">—</span> · Tráfico Local · AppSheet API</p>
+  </div>
+</div>
+
+<script>
+const APP_ID  = 'c03c2f96-a0d0-4bcf-a0f7-70ca22112546';
+const API_KEY = 'V2-MIjZN-l76O8-Zpwku-sH3nr-OBju5-aGe55-5tI7x-zk0YB';
+const APP_NAME = 'Traficolocal-229074242';
+const BASE = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables`;
+
+async function fetchTable(table) {
+  const r = await fetch(`${BASE}/${encodeURIComponent(table)}/Action`, {
+    method: 'POST',
+    headers: { 'applicationAccessKey': API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ Action: 'Find', Properties: {}, Rows: [] })
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status} en tabla ${table}`);
+  const j = await r.json();
+  return j;
+}
+
+function pct(v, t) { return t ? Math.round((v/t)*100) + '%' : '0%'; }
+function pctN(v, t) { return t ? Math.round((v/t)*100) : 0; }
+
+function barRow(label, val, maxVal, total, color) {
+  const w = maxVal ? Math.round((val/maxVal)*100) : 0;
+  const p = pct(val, total);
+  return `<div class="br">
+    <div class="bl" title="${label}">${label}</div>
+    <div class="bt"><div class="bf" style="width:${w}%;background:${color}"></div></div>
+    <div class="bn">${val}</div>
+    <div class="bp">${p}</div>
+  </div>`;
+}
+
+function count(arr, key) {
+  const m = {};
+  arr.forEach(r => { const v = (r[key]||'').toString().trim(); if(v) m[v] = (m[v]||0)+1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+
+function opInitials(n) { return (n||'?').substring(0,2).toUpperCase(); }
+
+function renderBars(containerId, entries, total, color, topN=10) {
+  const top = entries.slice(0, topN);
+  const maxV = top[0] ? top[0][1] : 1;
+  let html = top.map(([k,v]) => barRow(k, v, maxV, total, color)).join('');
+  const rest = entries.length - topN;
+  if(rest > 0) html += `<div class="more-note">+${rest} más con 1–2 registros c/u</div>`;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function formatDate(d) {
+  if(!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+async function main() {
+  try {
+    document.querySelector('.loader-text').textContent = 'Cargando IMPORTACION...';
+    const impRaw = await fetchTable('IMPORTACION');
+    document.querySelector('.loader-text').textContent = 'Cargando EXPORTACION...';
+    const expRaw = await fetchTable('EXPORTACION');
+
+    const imp = Array.isArray(impRaw) ? impRaw : (impRaw.Rows || impRaw.rows || []);
+    const exp = Array.isArray(expRaw) ? expRaw : (expRaw.Rows || expRaw.rows || []);
+
+    if(!imp.length && !exp.length) throw new Error('Las tablas están vacías o los nombres no coinciden.');
+
+    const totalImp = imp.length;
+    const totalExp = exp.length;
+    const total = totalImp + totalExp;
+
+    document.getElementById('k-imp').textContent = totalImp;
+    document.getElementById('k-exp').textContent = totalExp;
+    document.getElementById('k-total').textContent = total;
+    document.getElementById('ph-imp').textContent = totalImp;
+    document.getElementById('ph-exp').textContent = totalExp;
+
+    const impOps = new Set(imp.map(r=>(r.OPERADOR||'').trim().toUpperCase()).filter(Boolean));
+    const expOps = new Set(exp.map(r=>(r.OPERADOR||'').trim().toUpperCase()).filter(Boolean));
+    const allOps = new Set([...impOps, ...expOps]);
+    document.getElementById('k-ops').textContent = allOps.size + ' operadores activos';
+
+    const expDests = count(exp, 'DESTINO');
+    document.getElementById('k-exp-sub').textContent = 'Destinos: ' + expDests.slice(0,3).map(([k])=>k).join(', ');
+
+    const tipos = count(imp, 'TIPO');
+    const cjc  = tipos.find(([k])=>k.toUpperCase().includes('CJ') && k.toUpperCase().includes('CARG'))?.[1]||0;
+    const pltc = tipos.find(([k])=>k.toUpperCase().includes('PLT') && k.toUpperCase().includes('CARG'))?.[1]||0;
+    const vac  = totalImp - cjc - pltc;
+    document.getElementById('mk-cjc').textContent  = cjc;
+    document.getElementById('mk-pltc').textContent = pltc;
+    document.getElementById('mk-vac').textContent  = vac;
+    document.getElementById('mk-cjc-p').textContent  = pct(cjc, totalImp);
+    document.getElementById('mk-pltc-p').textContent = pct(pltc, totalImp);
+    document.getElementById('mk-vac-p').textContent  = pct(vac, totalImp);
+
+    const bodegas = count(imp, 'BODEGA');
+    if(bodegas[0]) {
+      document.getElementById('k-bodega').textContent = bodegas[0][0];
+      document.getElementById('k-bodega-sub').textContent = bodegas[0][1] + ' cruces · ' + pct(bodegas[0][1], totalImp);
+    }
+    renderBars('bodega-bars', bodegas, totalImp, '#3a8fff', 10);
+
+    const clientes = count(exp, 'CLIENTE');
+    const chr  = clientes.find(([k])=>k.toUpperCase().includes('CHRYS'))?.[1]||0;
+    const inm  = clientes.find(([k])=>k.toUpperCase().includes('INMA'))?.[1]||0;
+    const otros = totalExp - chr - inm;
+    document.getElementById('mk-chr').textContent    = chr;
+    document.getElementById('mk-inm').textContent    = inm;
+    document.getElementById('mk-otros').textContent  = otros;
+    document.getElementById('mk-chr-p').textContent  = pct(chr, totalExp);
+    document.getElementById('mk-inm-p').textContent  = pct(inm, totalExp);
+    document.getElementById('mk-otros-p').textContent = pct(otros, totalExp);
+    renderBars('cliente-bars', clientes, totalExp, '#3ecf8e', 7);
+    renderBars('destino-bars', expDests, totalExp, '#3ecf8e', 5);
+
+    const fechas = count(imp, 'FECHA');
+    const sortedFechas = fechas.sort((a,b)=>new Date(a[0])-new Date(b[0]));
+    const maxDay = Math.max(...sortedFechas.map(([,v])=>v));
+    if(sortedFechas.length) {
+      const first = formatDate(sortedFechas[0][0]);
+      const last  = formatDate(sortedFechas[sortedFechas.length-1][0]);
+      document.getElementById('date-range').textContent = first + ' → ' + last;
+      const firstV = sortedFechas[0][1];
+      const lastV  = sortedFechas[sortedFechas.length-1][1];
+      const chg = firstV ? Math.round(((lastV-firstV)/firstV)*100) : 0;
+      document.getElementById('trend-sub').textContent = `+${chg}% vs primer día registrado`;
+    }
+
+    const BLUE_SHADES = ['#1a5fcc','#2470e0','#3a8fff','#5aaeff'];
+    let trendHtml = '';
+    sortedFechas.forEach(([d,v], i) => {
+      const h = Math.max(15, Math.round((v/maxDay)*100));
+      const shade = BLUE_SHADES[Math.min(i, BLUE_SHADES.length-1)];
+      const dateObj = new Date(d + 'T12:00:00');
+      const label = isNaN(dateObj) ? d : dateObj.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+      trendHtml += `<div class="tday">
+        <div class="td-label">${label}</div>
+        <div class="td-bar-wrap"><div class="td-bar" style="height:${h}%;background:${shade}"><div class="td-num">${v}</div></div></div>
+        <div class="td-val" style="color:${shade}">${v}</div>
+      </div>`;
+    });
+    document.getElementById('trend-grid').innerHTML = trendHtml || '<div style="color:var(--text3);padding:16px">Sin datos de fecha</div>';
+
+    const impCount = {};
+    imp.forEach(r => { const op = (r.OPERADOR||'').trim().toUpperCase(); if(op) impCount[op]=(impCount[op]||0)+1; });
+    const expCount = {};
+    exp.forEach(r => { const op = (r.OPERADOR||'').trim().toUpperCase(); if(op) expCount[op]=(expCount[op]||0)+1; });
+    const allOpKeys = [...new Set([...Object.keys(impCount), ...Object.keys(expCount)])];
+    const opsSorted = allOpKeys.map(k=>({ n:k, imp:impCount[k]||0, exp:expCount[k]||0, tot:(impCount[k]||0)+(expCount[k]||0) })).sort((a,b)=>b.tot-a.tot);
+    const maxTot = opsSorted[0]?.tot || 1;
+
+    let tbody = '';
+    opsSorted.forEach(o => {
+      let tipo, cls, avCls;
+      if(o.imp>0&&o.exp>0){tipo='IMP+EXP';cls='tag-a';avCls='a';}
+      else if(o.imp>0){tipo='Solo IMP';cls='tag-b';avCls='b';}
+      else{tipo='Solo EXP';cls='tag-g';avCls='g';}
+      const wI = Math.round((o.imp/maxTot)*120);
+      const wE = Math.round((o.exp/maxTot)*120);
+      tbody += `<tr>
+        <td><span class="av ${avCls}">${opInitials(o.n)}</span>${o.n}</td>
+        <td class="r"><span class="num-imp">${o.imp}</span></td>
+        <td class="r"><span class="num-exp">${o.exp}</span></td>
+        <td class="r"><span class="num-tot">${o.tot}</span></td>
+        <td class="r"><span class="tag ${cls}">${tipo}</span></td>
+        <td><div class="op-bar-wrap">
+          ${o.imp?`<div class="op-bar-seg" style="width:${wI}px;background:var(--blue)"></div>`:''}
+          ${o.exp?`<div class="op-bar-seg" style="width:${wE}px;background:var(--green)"></div>`:''}
+        </div></td>
+      </tr>`;
+    });
+    document.getElementById('ops-tbody').innerHTML = tbody || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin operadores</td></tr>';
+
+    const topBodega = bodegas[0];
+    const topCliente = clientes[0];
+    const bimodal = opsSorted.filter(o=>o.imp>0&&o.exp>0).length;
+    const topOp = opsSorted[0];
+
+    document.getElementById('ins1').innerHTML = topBodega
+      ? `<strong>${topBodega[0]}</strong> concentra ${topBodega[1]} de ${totalImp} cruces (${pct(topBodega[1],totalImp)}). Alta dependencia de una sola bodega.`
+      : '—';
+    document.getElementById('ins2').innerHTML = topCliente
+      ? `<strong>${topCliente[0]}</strong> representa ${topCliente[1]} de ${totalExp} órdenes (${pct(topCliente[1],totalExp)}). Riesgo de concentración de cliente.`
+      : '—';
+    document.getElementById('ins3').innerHTML = `<strong>${bimodal} operadores</strong> activos en IMP y EXP. Líder: <strong>${topOp?.n||'—'}</strong> con ${topOp?.imp||0} IMP + ${topOp?.exp||0} EXP.`;
+
+    document.getElementById('last-updated').textContent = new Date().toLocaleString('es-MX');
+
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('error-msg').textContent = e.message || 'Error desconocido. Revisa la consola del navegador.';
+    document.getElementById('error-box').style.display = 'flex';
+  }
+}
+
+main();
+</script>
+</body>
+</html>
