@@ -1,547 +1,799 @@
+Index · HTML
+Copiar
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dashboard Tráfico Local</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<title>TransMex — Dashboard Operativo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #0d0f12;
-  --bg2: #13161b;
-  --bg3: #1a1e25;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --text: #e8eaf0;
-  --text2: #7a8090;
-  --text3: #4a5060;
-  --blue: #3a8fff;
-  --blue2: #1a5fcc;
-  --blue-bg: rgba(58,143,255,0.1);
-  --green: #3ecf8e;
-  --green2: #1a9e64;
-  --green-bg: rgba(62,207,142,0.1);
-  --amber: #f5a623;
-  --amber-bg: rgba(245,166,35,0.1);
+  --navy: #0a1628;
+  --navy2: #0f1e35;
+  --navy3: #162540;
+  --navy4: #1d2f50;
+  --navy5: #243660;
+  --gold: #c9a227;
+  --gold2: #e8b830;
+  --gold3: #f5cc50;
+  --gold-bg: rgba(201,162,39,0.1);
+  --gold-border: rgba(201,162,39,0.25);
+  --blue: #1e6abf;
+  --blue2: #2880e0;
+  --blue-bg: rgba(30,106,191,0.12);
+  --blue-border: rgba(30,106,191,0.3);
+  --green: #22c97a;
+  --green-bg: rgba(34,201,122,0.1);
   --red: #ff4d6a;
   --red-bg: rgba(255,77,106,0.1);
+  --text: #e8edf5;
+  --text2: #8a97b0;
+  --text3: #4a5570;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
   --radius: 10px;
   --radius-lg: 14px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.4);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  min-height: 100vh;
-}
-a { color: inherit; text-decoration: none; }
-
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--navy);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+ 
 /* LOADER */
-#loader {
-  position: fixed; inset: 0; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  z-index: 999;
-}
-.loader-ring {
-  width: 40px; height: 40px; border: 2px solid var(--border2);
-  border-top-color: var(--blue); border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-.loader-text { font-size: 13px; color: var(--text2); letter-spacing: 0.5px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ERROR */
-#error-box {
-  display: none; position: fixed; inset: 0; background: var(--bg);
-  align-items: center; justify-content: center; z-index: 998;
-}
-.err-card {
-  background: var(--bg2); border: 0.5px solid var(--border2);
-  border-left: 3px solid var(--red); border-radius: var(--radius-lg);
-  padding: 28px 32px; max-width: 440px;
-}
-.err-card h3 { font-size: 15px; color: var(--red); margin-bottom: 8px; }
-.err-card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
-.err-card code { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--amber); background: var(--bg3); padding: 2px 6px; border-radius: 4px; }
-
-/* LAYOUT */
-#app { display: none; max-width: 1100px; margin: 0 auto; padding: 28px 24px 48px; }
-
-/* HEADER */
-.hdr {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  padding-bottom: 20px; border-bottom: 0.5px solid var(--border);
-  margin-bottom: 24px;
-}
-.hdr h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.4px; color: var(--text); }
-.hdr-sub { font-size: 12px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
-.live-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; color: var(--green); background: var(--green-bg);
-  padding: 5px 12px; border-radius: 100px; border: 0.5px solid rgba(62,207,142,0.2);
-}
-.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-/* SUMMARY STRIP */
-.summary-strip {
-  display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 10px; margin-bottom: 20px;
-}
-.scard {
-  background: var(--bg2); border: 0.5px solid var(--border);
-  border-radius: var(--radius); padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.scard .sc-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); }
-.scard .sc-val { font-size: 28px; font-weight: 500; line-height: 1; }
-.scard .sc-sub { font-size: 11px; color: var(--text3); }
-.scard.blue .sc-val { color: var(--blue); }
-.scard.green .sc-val { color: var(--green); }
-.scard.amber .sc-val { color: var(--amber); }
-.scard.total .sc-val { color: var(--text); }
-
-/* SPLIT PANELS */
-.panels { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; margin-bottom: 16px; }
-
-/* PANEL */
-.panel {
-  background: var(--bg2); border: 0.5px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden;
-}
-.panel-hdr {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 18px 14px; border-bottom: 0.5px solid var(--border);
-}
-.panel-hdr .ph-left { display: flex; align-items: baseline; gap: 10px; }
-.panel-hdr .ph-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); }
-.panel-hdr .ph-count { font-size: 26px; font-weight: 500; line-height: 1; }
-.panel-hdr .ph-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.panel-hdr .ph-badge {
-  font-size: 10px; font-weight: 500; padding: 4px 10px; border-radius: 100px;
-}
-.ph-badge.blue { background: var(--blue-bg); color: var(--blue); border: 0.5px solid rgba(58,143,255,0.25); }
-.ph-badge.green { background: var(--green-bg); color: var(--green); border: 0.5px solid rgba(62,207,142,0.25); }
-
-.mini-kpis { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-bottom: 0.5px solid var(--border); }
-.mk { padding: 12px 14px; border-right: 0.5px solid var(--border); }
-.mk:last-child { border-right: none; }
-.mk .mk-l { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text3); margin-bottom: 4px; }
-.mk .mk-v { font-size: 18px; font-weight: 500; }
-.mk .mk-s { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
-.panel-body { padding: 14px 18px; }
-.sec-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 10px; }
-
-/* BAR ROWS */
-.br { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.bl { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bt { flex: 1; background: var(--bg3); border-radius: 3px; height: 6px; overflow: hidden; }
-.bf { height: 6px; border-radius: 3px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
-.bn { font-size: 12px; font-weight: 500; color: var(--text); width: 22px; text-align: right; flex-shrink: 0; font-family: 'DM Mono', monospace; }
-.bp { font-size: 11px; color: var(--text3); width: 34px; text-align: right; flex-shrink: 0; font-family: 'DM Mono', monospace; }
-.more-note { font-size: 11px; color: var(--text3); margin-top: 6px; padding-top: 6px; border-top: 0.5px solid var(--border); }
-
-/* DIVIDER */
-.inner-div { border-top: 0.5px solid var(--border); margin: 12px 0; }
-
+#loader{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:999}
+.loader-logo{display:flex;align-items:center;gap:12px}
+.logo-shield{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--blue));clip-path:polygon(50% 0%,100% 15%,100% 60%,50% 100%,0% 60%,0% 15%);display:flex;align-items:center;justify-content:center;font-family:'Inter Tight',sans-serif;font-weight:700;font-size:22px;color:white}
+.loader-name{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.5px;color:var(--text)}
+.loader-name span{color:var(--gold)}
+.loader-bar{width:200px;height:2px;background:var(--navy4);border-radius:2px;overflow:hidden}
+.loader-fill{height:2px;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:2px;width:0%;animation:load 2s ease forwards}
+@keyframes load{to{width:100%}}
+.loader-txt{font-size:12px;color:var(--text3);letter-spacing:0.5px}
+ 
+/* TOPBAR */
+#topbar{background:var(--navy2);border-bottom:1px solid var(--border2);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-shield{width:34px;height:34px;position:relative}
+.tb-shield svg{width:34px;height:34px}
+.tb-names{display:flex;flex-direction:column}
+.tb-title{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:16px;letter-spacing:-0.3px;color:var(--text)}
+.tb-title span{color:var(--gold)}
+.tb-sub{font-size:10px;color:var(--text3);letter-spacing:0.4px;text-transform:uppercase}
+.tb-right{display:flex;align-items:center;gap:12px}
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:100px;border:1px solid rgba(34,201,122,0.2);cursor:pointer;transition:all .2s}
+.live-badge:hover{background:rgba(34,201,122,0.18)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.last-upd{font-size:11px;color:var(--text3)}
+#refresh-btn{background:var(--navy4);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+#refresh-btn:hover{background:var(--navy5);color:var(--text)}
+#refresh-btn svg{transition:transform .5s}
+#refresh-btn.spinning svg{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+ 
+/* NAV TABS */
+#navtabs{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px}
+.nav-tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:0.2px;white-space:nowrap}
+.nav-tab:hover{color:var(--text2)}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+ 
+/* MAIN */
+#main{padding:20px 24px 48px;max-width:1200px;margin:0 auto}
+ 
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+ 
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi .kl{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);margin-bottom:8px}
+.kpi .kv{font-size:30px;font-family:'Inter Tight',sans-serif;font-weight:700;line-height:1;letter-spacing:-1px}
+.kpi .ks{font-size:11px;color:var(--text3);margin-top:6px}
+.kpi .kt{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:100px;margin-top:6px}
+.kpi.blue .kv{color:var(--blue2)}
+.kpi.gold .kv{color:var(--gold2)}
+.kpi.green .kv{color:var(--green)}
+.kpi.white .kv{color:var(--text)}
+ 
+/* GRID 2 */
+.g2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.g2b{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;margin-bottom:14px}
+ 
+/* CARD */
+.card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border)}
+.card-hdr .ch-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)}
+.card-hdr .ch-count{font-size:22px;font-family:'Inter Tight',sans-serif;font-weight:700;color:var(--text)}
+.card-hdr .ch-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.card-body{padding:14px 18px}
+ 
+/* BADGE */
+.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px}
+.badge-blue{background:var(--blue-bg);color:var(--blue2);border:1px solid var(--blue-border)}
+.badge-gold{background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold-border)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+ 
+/* BARS */
+.br{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bl{font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bl.w110{width:110px}
+.bl.w140{width:140px}
+.bl.w90{width:90px}
+.bt{flex:1;background:var(--navy4);border-radius:3px;height:6px;overflow:hidden}
+.bf{height:6px;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.bn{font-size:12px;font-weight:600;color:var(--text);width:24px;text-align:right;flex-shrink:0;font-family:'Inter Tight',sans-serif}
+.bp{font-size:11px;color:var(--text3);width:34px;text-align:right;flex-shrink:0}
+ 
+/* TREND BARS */
+.trend-cols{display:flex;align-items:flex-end;gap:6px;height:90px;padding:0 4px}
+.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.trend-col .tc-bar{width:100%;border-radius:4px 4px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1),opacity .2s}
+.trend-col:hover .tc-bar{opacity:0.8}
+.trend-col .tc-val{font-size:10px;font-weight:600;color:var(--text2);font-family:'Inter Tight',sans-serif}
+.trend-col .tc-lbl{font-size:9px;color:var(--text3);white-space:nowrap}
+ 
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:8px}
+.dl-row{display:flex;align-items:center;gap:8px}
+.dl-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.dl-name{font-size:12px;color:var(--text2);flex:1}
+.dl-val{font-size:12px;font-weight:600;color:var(--text);font-family:'Inter Tight',sans-serif}
+.dl-pct{font-size:11px;color:var(--text3);margin-left:2px}
+ 
 /* OPERATORS TABLE */
-.ops-panel { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; overflow: hidden; }
-.ops-tbl { width: 100%; border-collapse: collapse; }
-.ops-tbl th {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-  color: var(--text3); text-align: left; padding: 10px 14px;
-  border-bottom: 0.5px solid var(--border); font-weight: 500; background: var(--bg3);
-}
-.ops-tbl th.r { text-align: right; }
-.ops-tbl td { font-size: 12px; color: var(--text); padding: 9px 14px; border-bottom: 0.5px solid var(--border); }
-.ops-tbl td.r { text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; }
-.ops-tbl tr:last-child td { border-bottom: none; }
-.ops-tbl tbody tr:hover td { background: var(--bg3); }
-.av {
-  width: 26px; height: 26px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 500; margin-right: 8px; vertical-align: middle; flex-shrink: 0;
-}
-.av.b { background: var(--blue-bg); color: var(--blue); }
-.av.g { background: var(--green-bg); color: var(--green); }
-.av.a { background: var(--amber-bg); color: var(--amber); }
-.num-imp { color: var(--blue); font-weight: 500; }
-.num-exp { color: var(--green); font-weight: 500; }
-.num-tot { color: var(--text); font-weight: 500; }
-.tag { font-size: 10px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
-.tag-b { background: var(--blue-bg); color: var(--blue); }
-.tag-g { background: var(--green-bg); color: var(--green); }
-.tag-a { background: var(--amber-bg); color: var(--amber); }
-.op-bar-wrap { display: flex; gap: 2px; align-items: center; }
-.op-bar-seg { height: 5px; border-radius: 2px; }
-
-/* TREND */
-.trend-panel { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 16px; overflow: hidden; }
-.trend-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0; padding: 16px 18px; }
-.tday { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.td-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; font-family: 'DM Mono', monospace; }
-.td-bar-wrap { width: 100%; height: 70px; background: var(--bg3); border-radius: 6px; display: flex; align-items: flex-end; overflow: hidden; }
-.td-bar { width: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: height 0.8s cubic-bezier(.4,0,.2,1); }
-.td-num { font-size: 11px; font-weight: 500; color: #fff; font-family: 'DM Mono', monospace; }
-.td-val { font-size: 18px; font-weight: 500; font-family: 'DM Mono', monospace; }
-
+.ops-wrap{overflow-x:auto}
+.ops-tbl{width:100%;border-collapse:collapse;min-width:500px}
+.ops-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);font-weight:600;background:var(--navy3)}
+.ops-tbl th.r{text-align:right}
+.ops-tbl td{font-size:12px;color:var(--text);padding:9px 12px;border-bottom:1px solid var(--border)}
+.ops-tbl td.r{text-align:right;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:13px}
+.ops-tbl tbody tr{cursor:pointer;transition:background .15s}
+.ops-tbl tbody tr:hover td{background:var(--navy3)}
+.ops-tbl tbody tr:last-child td{border-bottom:none}
+.av{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:8px;vertical-align:middle;flex-shrink:0;font-family:'Inter Tight',sans-serif}
+.av-b{background:var(--blue-bg);color:var(--blue2);border:1px solid var(--blue-border)}
+.av-g{background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold-border)}
+.av-gr{background:var(--green-bg);color:var(--green)}
+.mini-bar-wrap{display:flex;gap:2px;align-items:center;min-width:80px}
+.mini-seg{height:5px;border-radius:2px;min-width:3px}
+ 
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-label{font-size:11px;color:var(--text3);letter-spacing:0.3px}
+.filter-btn{background:var(--navy3);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.filter-btn:hover{background:var(--navy4);color:var(--text)}
+.filter-btn.active{background:var(--gold-bg);color:var(--gold2);border-color:var(--gold-border)}
+select.filter-sel{background:var(--navy3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;outline:none}
+select.filter-sel:focus{border-color:var(--gold-border)}
+ 
+/* OPERATOR DETAIL */
+.op-detail-card{background:var(--navy2);border:1px solid var(--gold-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;display:none}
+.op-detail-card.visible{display:block;animation:fadeUp .3s ease}
+.op-detail-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.op-detail-name{display:flex;align-items:center;gap:12px}
+.op-avatar-lg{width:44px;height:44px;border-radius:50%;background:var(--gold-bg);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gold2);font-family:'Inter Tight',sans-serif}
+.op-detail-close{background:var(--navy4);border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.op-detail-close:hover{color:var(--text);background:var(--navy5)}
+.op-stat-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.op-stat{background:var(--navy3);border-radius:8px;padding:12px 14px;text-align:center}
+.op-stat .osl{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text3);margin-bottom:4px}
+.op-stat .osv{font-size:22px;font-weight:700;font-family:'Inter Tight',sans-serif}
+ 
 /* INSIGHTS */
-.insights { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
-.ins { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid var(--border); position: relative; overflow: hidden; }
-.ins::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; }
-.ins.i1::before { background: var(--blue); }
-.ins.i2::before { background: var(--green); }
-.ins.i3::before { background: var(--amber); }
-.ins .il { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 6px; }
-.ins .iv { font-size: 12px; color: var(--text2); line-height: 1.6; }
-.ins .iv strong { color: var(--text); font-weight: 500; }
-
-/* FOOTER */
-.footer { text-align: center; padding-top: 24px; border-top: 0.5px solid var(--border); }
-.footer p { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
-#last-updated { color: var(--text2); }
-
-/* FADE IN */
-.fade-in { animation: fadeIn 0.5s ease forwards; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-@media (max-width: 700px) {
-  .panels, .summary-strip, .insights { grid-template-columns: 1fr; }
-  .mini-kpis { grid-template-columns: repeat(3,1fr); }
-  .ops-tbl th:nth-child(5), .ops-tbl td:nth-child(5) { display: none; }
+.ins-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.ins{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
+.ins::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0}
+.ins.i-blue::before{background:var(--blue2)}
+.ins.i-gold::before{background:var(--gold)}
+.ins.i-green::before{background:var(--green)}
+.ins.i-red::before{background:var(--red)}
+.ins .il{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px}
+.ins .iv{font-size:12px;color:var(--text2);line-height:1.6}
+.ins .iv strong{color:var(--text);font-weight:600}
+ 
+/* DIVIDER */
+.div-line{border:none;border-top:1px solid var(--border);margin:12px 0}
+ 
+/* SECTION LABEL */
+.sec-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:10px;font-weight:600}
+ 
+/* MORE NOTE */
+.more-note{font-size:11px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
+ 
+/* PAGE TRANSITION */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:fadeUp .3s ease}
+ 
+/* EMPTY STATE */
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+ 
+/* MINI STATS ROW */
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
+.ms{padding:12px 16px;border-right:1px solid var(--border)}
+.ms:last-child{border-right:none}
+.ms .msl{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text3);margin-bottom:4px}
+.ms .msv{font-size:20px;font-weight:700;font-family:'Inter Tight',sans-serif}
+.ms .mss{font-size:11px;color:var(--text3);margin-top:2px}
+ 
+/* RESPONSIVE */
+@media(max-width:768px){
+  .kpi-strip,.g2,.g2b,.g3,.ins-row{grid-template-columns:1fr}
+  .mini-stats{grid-template-columns:repeat(3,1fr)}
+  #topbar{padding:0 14px}
+  #navtabs{padding:0 14px;overflow-x:auto}
+  #main{padding:14px 14px 48px}
 }
 </style>
 </head>
 <body>
-
+ 
 <div id="loader">
-  <div class="loader-ring"></div>
-  <div class="loader-text">Conectando con AppSheet...</div>
-</div>
-
-<div id="error-box">
-  <div class="err-card">
-    <h3>Error al cargar datos</h3>
-    <p id="error-msg">No se pudo conectar con la API de AppSheet. Verifica que el <code>APP_ID</code> y <code>API_KEY</code> sean correctos y que la API esté habilitada en <strong>Settings → Integrations</strong>.</p>
+  <div class="loader-logo">
+    <div class="logo-shield">T</div>
+    <div class="loader-name">Trans<span>Mex</span></div>
   </div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-txt" id="loader-txt">Conectando con AppSheet...</div>
 </div>
-
-<div id="app">
-  <div class="hdr fade-in">
-    <div>
-      <h1>Tráfico local — Reporte operativo</h1>
-      <div class="hdr-sub">AppSheet · Importación + Exportación · <span id="date-range">cargando...</span></div>
+ 
+<div id="app" style="display:none">
+ 
+  <div id="topbar">
+    <div class="tb-brand">
+      <div class="tb-shield">
+        <svg viewBox="0 0 34 40" fill="none">
+          <path d="M17 1L33 7V22C33 31 17 39 17 39C17 39 1 31 1 22V7L17 1Z" fill="#0f1e35" stroke="rgba(201,162,39,0.4)" stroke-width="1"/>
+          <path d="M17 6L28 10.5V21C28 27.5 17 33.5 17 33.5C17 33.5 6 27.5 6 21V10.5L17 6Z" fill="url(#sg)"/>
+          <text x="17" y="24" text-anchor="middle" font-family="Inter Tight" font-weight="800" font-size="14" fill="white">T</text>
+          <defs><linearGradient id="sg" x1="6" y1="6" x2="28" y2="34"><stop offset="0%" stop-color="#1e6abf"/><stop offset="100%" stop-color="#c9a227"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div class="tb-names">
+        <div class="tb-title">Trans<span>Mex</span></div>
+        <div class="tb-sub">Dashboard Operativo · Tráfico Local</div>
+      </div>
     </div>
-    <div class="live-badge"><div class="live-dot"></div>En vivo</div>
+    <div class="tb-right">
+      <div class="last-upd">Actualizado: <span id="last-upd">—</span></div>
+      <button id="refresh-btn" onclick="refreshData()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Actualizar
+      </button>
+      <div class="live-badge" onclick="refreshData()"><div class="live-dot"></div>En vivo</div>
+    </div>
   </div>
-
-  <div class="summary-strip fade-in">
-    <div class="scard blue"><div class="sc-label">Cruces importación</div><div class="sc-val" id="k-imp">—</div><div class="sc-sub">TRANSFER · operación única</div></div>
-    <div class="scard green"><div class="sc-label">Órdenes exportación</div><div class="sc-val" id="k-exp">—</div><div class="sc-sub" id="k-exp-sub">—</div></div>
-    <div class="scard amber"><div class="sc-label">Total movimientos</div><div class="sc-val" id="k-total">—</div><div class="sc-sub" id="k-ops">— operadores activos</div></div>
-    <div class="scard total"><div class="sc-label">Bodega principal</div><div class="sc-val" style="font-size:18px;margin-top:4px" id="k-bodega">—</div><div class="sc-sub" id="k-bodega-sub">—</div></div>
+ 
+  <div id="navtabs">
+    <div class="nav-tab active" onclick="showPage('general')">Resumen General</div>
+    <div class="nav-tab" onclick="showPage('importacion')">Importación</div>
+    <div class="nav-tab" onclick="showPage('exportacion')">Exportación</div>
+    <div class="nav-tab" onclick="showPage('operadores')">Operadores</div>
+    <div class="nav-tab" onclick="showPage('tendencia')">Tendencia</div>
   </div>
-
-  <div class="panels fade-in">
-    <div class="panel">
-      <div class="panel-hdr">
-        <div>
-          <div class="ph-title">Importación</div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
-            <div class="ph-count" style="color:var(--blue)" id="ph-imp">—</div>
-            <div class="ph-sub">cruces totales</div>
+ 
+  <div id="main">
+ 
+    <!-- GENERAL -->
+    <div class="page active" id="page-general">
+      <div class="kpi-strip">
+        <div class="kpi blue"><div class="kl">Cruces importación</div><div class="kv" id="g-imp">—</div><div class="ks">Operación TRANSFER</div></div>
+        <div class="kpi gold"><div class="kl">Órdenes exportación</div><div class="kv" id="g-exp">—</div><div class="ks" id="g-exp-s">—</div></div>
+        <div class="kpi white"><div class="kl">Total movimientos</div><div class="kv" id="g-tot">—</div><div class="ks" id="g-ops-s">— operadores activos</div></div>
+        <div class="kpi green"><div class="kl">Días con registro</div><div class="kv" id="g-days">—</div><div class="ks" id="g-range">—</div></div>
+      </div>
+ 
+      <div class="g2">
+        <div class="card">
+          <div class="card-hdr"><div><div class="ch-title">Bodega principal — Importación</div><div class="ch-sub" id="gh-bod-sub">Top bodegas por volumen</div></div><span class="badge badge-blue" id="gh-bod-badge">—</span></div>
+          <div class="mini-stats">
+            <div class="ms"><div class="msl">Bodega #1</div><div class="msv" style="color:var(--blue2);font-size:15px" id="gm-bod1">—</div><div class="mss" id="gm-bod1s">—</div></div>
+            <div class="ms"><div class="msl">Bodega #2</div><div class="msv" style="color:var(--text2);font-size:15px" id="gm-bod2">—</div><div class="mss" id="gm-bod2s">—</div></div>
+            <div class="ms"><div class="msl">Otras bodegas</div><div class="msv" id="gm-bodN">—</div><div class="mss" id="gm-bodNs">—</div></div>
+          </div>
+          <div class="card-body" id="g-bodega-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Tipo de carga — IMP</div></div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <canvas id="donut-tipo" width="110" height="110" role="img" aria-label="Distribución tipo de carga importación">Tipos de carga importación.</canvas>
+              <div class="donut-legend" id="donut-legend-tipo"></div>
+            </div>
           </div>
         </div>
-        <span class="ph-badge blue">TRANSFER</span>
       </div>
-      <div class="mini-kpis">
-        <div class="mk"><div class="mk-l">CJ Cargada</div><div class="mk-v" style="color:var(--blue)" id="mk-cjc">—</div><div class="mk-s" id="mk-cjc-p">—</div></div>
-        <div class="mk"><div class="mk-l">PLT Cargada</div><div class="mk-v" style="color:var(--blue)" id="mk-pltc">—</div><div class="mk-s" id="mk-pltc-p">—</div></div>
-        <div class="mk"><div class="mk-l">Vacías</div><div class="mk-v" id="mk-vac">—</div><div class="mk-s" id="mk-vac-p">—</div></div>
+ 
+      <div class="g2b">
+        <div class="card">
+          <div class="card-hdr"><div><div class="ch-title">Cliente principal — Exportación</div></div><span class="badge badge-gold" id="gh-cli-badge">—</span></div>
+          <div class="card-body" id="g-cliente-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Top operadores — combinado IMP+EXP</div></div>
+          <div class="card-body" id="g-top-ops"></div>
+        </div>
       </div>
-      <div class="panel-body">
-        <div class="sec-label">Bodegas — top 10</div>
-        <div id="bodega-bars">cargando...</div>
+ 
+      <div class="ins-row">
+        <div class="ins i-blue"><div class="il">Concentración IMP</div><div class="iv" id="ins-g1">—</div></div>
+        <div class="ins i-gold"><div class="il">Concentración EXP</div><div class="iv" id="ins-g2">—</div></div>
+        <div class="ins i-green"><div class="il">Tendencia operativa</div><div class="iv" id="ins-g3">—</div></div>
       </div>
     </div>
-
-    <div class="panel">
-      <div class="panel-hdr">
-        <div>
-          <div class="ph-title">Exportación</div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
-            <div class="ph-count" style="color:var(--green)" id="ph-exp">—</div>
-            <div class="ph-sub">órdenes totales</div>
+ 
+    <!-- IMPORTACION -->
+    <div class="page" id="page-importacion">
+      <div class="kpi-strip">
+        <div class="kpi blue"><div class="kl">Total cruces</div><div class="kv" id="i-tot">—</div><div class="ks">Operación TRANSFER</div></div>
+        <div class="kpi blue"><div class="kl">CJ Cargada</div><div class="kv" id="i-cjc">—</div><div class="ks" id="i-cjc-s">—</div></div>
+        <div class="kpi white"><div class="kl">PLT Cargada</div><div class="kv" id="i-pltc">—</div><div class="ks" id="i-pltc-s">—</div></div>
+        <div class="kpi white"><div class="kl">Vacías (CJ+PLT)</div><div class="kv" id="i-vac">—</div><div class="ks" id="i-vac-s">—</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Bodegas por volumen</div><div class="ch-sub">Todas las bodegas con registro</div></div>
+          <div class="card-body" id="i-bodega-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Distribución por tipo</div></div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <canvas id="donut-imp" width="110" height="110" role="img" aria-label="Tipos de carga importación">Tipos importación.</canvas>
+              <div class="donut-legend" id="donut-legend-imp"></div>
+            </div>
           </div>
         </div>
-        <span class="ph-badge green">TRANSFER</span>
       </div>
-      <div class="mini-kpis">
-        <div class="mk"><div class="mk-l">Chrysler</div><div class="mk-v" style="color:var(--green)" id="mk-chr">—</div><div class="mk-s" id="mk-chr-p">—</div></div>
-        <div class="mk"><div class="mk-l">Inmagusa</div><div class="mk-v" style="color:var(--green)" id="mk-inm">—</div><div class="mk-s" id="mk-inm-p">—</div></div>
-        <div class="mk"><div class="mk-l">Otros</div><div class="mk-v" id="mk-otros">—</div><div class="mk-s" id="mk-otros-p">—</div></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="ch-title">Cruces por día</div><div class="ch-sub" id="i-trend-sub">—</div></div>
+        <div class="card-body"><div id="i-trend-bars" class="trend-cols"></div><div id="i-trend-labels" style="display:flex;gap:6px;padding:6px 4px 0;font-size:9px;color:var(--text3)"></div></div>
       </div>
-      <div class="panel-body">
-        <div class="sec-label">Clientes</div>
-        <div id="cliente-bars">cargando...</div>
-        <div class="inner-div"></div>
-        <div class="sec-label">Destinos</div>
-        <div id="destino-bars">cargando...</div>
+      <div class="card">
+        <div class="card-hdr"><div class="ch-title">Operadores — Importación</div></div>
+        <div class="ops-wrap"><table class="ops-tbl"><thead><tr><th>Operador</th><th class="r">Cruces</th><th class="r">%</th><th>Bodegas</th></tr></thead><tbody id="i-ops-tbody"></tbody></table></div>
       </div>
     </div>
-  </div>
-
-  <div class="trend-panel fade-in">
-    <div class="panel-hdr">
-      <div class="ph-title">Tendencia diaria — Importación</div>
-      <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace" id="trend-sub">—</div>
-    </div>
-    <div class="trend-grid" id="trend-grid">cargando...</div>
-  </div>
-
-  <div class="ops-panel fade-in">
-    <div class="panel-hdr">
-      <div>
-        <div class="ph-title">Operadores — actividad individual</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:3px">IMP + EXP desglosado</div>
+ 
+    <!-- EXPORTACION -->
+    <div class="page" id="page-exportacion">
+      <div class="kpi-strip">
+        <div class="kpi gold"><div class="kl">Total órdenes</div><div class="kv" id="e-tot">—</div><div class="ks">Exportación registrada</div></div>
+        <div class="kpi gold"><div class="kl">Cliente principal</div><div class="kv" style="font-size:16px;margin-top:4px" id="e-cli1">—</div><div class="ks" id="e-cli1-s">—</div></div>
+        <div class="kpi white"><div class="kl">Destino principal</div><div class="kv" style="font-size:16px;margin-top:4px" id="e-dest1">—</div><div class="ks" id="e-dest1-s">—</div></div>
+        <div class="kpi white"><div class="kl">Otros clientes</div><div class="kv" id="e-otros">—</div><div class="ks" id="e-otros-s">—</div></div>
       </div>
-      <div style="display:flex;gap:10px">
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>IMP</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block"></span>EXP</span>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Clientes por volumen</div></div>
+          <div class="card-body" id="e-cliente-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Destinos</div></div>
+          <div class="card-body" id="e-destino-bars"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="ch-title">Operadores — Exportación</div></div>
+        <div class="ops-wrap"><table class="ops-tbl"><thead><tr><th>Operador</th><th class="r">Órdenes</th><th class="r">%</th><th>Clientes</th></tr></thead><tbody id="e-ops-tbody"></tbody></table></div>
       </div>
     </div>
-    <div style="overflow-x:auto">
-      <table class="ops-tbl">
-        <thead>
-          <tr>
-            <th style="width:30%">Operador</th>
-            <th class="r">IMP</th>
-            <th class="r">EXP</th>
-            <th class="r">Total</th>
-            <th class="r">Tipo</th>
-            <th>Actividad</th>
-          </tr>
-        </thead>
-        <tbody id="ops-tbody">
-          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">cargando...</td></tr>
-        </tbody>
-      </table>
+ 
+    <!-- OPERADORES -->
+    <div class="page" id="page-operadores">
+      <div class="filter-bar">
+        <span class="filter-label">Filtrar por tipo:</span>
+        <button class="filter-btn active" onclick="filterOps('all',this)">Todos</button>
+        <button class="filter-btn" onclick="filterOps('both',this)">IMP + EXP</button>
+        <button class="filter-btn" onclick="filterOps('imp',this)">Solo IMP</button>
+        <button class="filter-btn" onclick="filterOps('exp',this)">Solo EXP</button>
+        <select class="filter-sel" id="ops-sort" onchange="renderOpsPage()">
+          <option value="total">Ordenar: Total</option>
+          <option value="imp">Ordenar: IMP</option>
+          <option value="exp">Ordenar: EXP</option>
+          <option value="name">Ordenar: Nombre</option>
+        </select>
+      </div>
+ 
+      <div class="op-detail-card" id="op-detail">
+        <div class="op-detail-hdr">
+          <div class="op-detail-name">
+            <div class="op-avatar-lg" id="op-det-av">—</div>
+            <div><div style="font-size:16px;font-weight:700;font-family:'Inter Tight',sans-serif" id="op-det-name">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px" id="op-det-sub">—</div></div>
+          </div>
+          <button class="op-detail-close" onclick="closeOpDetail()">✕</button>
+        </div>
+        <div class="op-stat-row">
+          <div class="op-stat"><div class="osl">Cruces IMP</div><div class="osv" style="color:var(--blue2)" id="op-det-imp">—</div></div>
+          <div class="op-stat"><div class="osl">Órdenes EXP</div><div class="osv" style="color:var(--gold2)" id="op-det-exp">—</div></div>
+          <div class="op-stat"><div class="osl">Total mov.</div><div class="osv" id="op-det-tot">—</div></div>
+          <div class="op-stat"><div class="osl">Tipo</div><div class="osv" style="font-size:13px" id="op-det-tipo">—</div></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="sec-lbl">Bodegas atendidas (IMP)</div>
+          <div id="op-det-bodegas" style="font-size:12px;color:var(--text2)"></div>
+        </div>
+      </div>
+ 
+      <div class="card">
+        <div class="card-hdr">
+          <div><div class="ch-title">Ranking operadores</div><div class="ch-sub" id="ops-count-lbl">—</div></div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--blue2);display:inline-block"></span>IMP</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--gold2);display:inline-block"></span>EXP</span>
+          </div>
+        </div>
+        <div class="ops-wrap">
+          <table class="ops-tbl">
+            <thead><tr><th>#</th><th>Operador</th><th class="r">IMP</th><th class="r">EXP</th><th class="r">Total</th><th>Tipo</th><th>Actividad</th></tr></thead>
+            <tbody id="ops-tbody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="insights fade-in">
-    <div class="ins i1"><div class="il">Concentración IMP</div><div class="iv" id="ins1">—</div></div>
-    <div class="ins i2"><div class="il">Concentración EXP</div><div class="iv" id="ins2">—</div></div>
-    <div class="ins i3"><div class="il">Tendencia operativa</div><div class="iv" id="ins3">—</div></div>
-  </div>
-
-  <div class="footer fade-in">
-    <p>Última actualización: <span id="last-updated">—</span> · Tráfico Local · AppSheet API</p>
+ 
+    <!-- TENDENCIA -->
+    <div class="page" id="page-tendencia">
+      <div class="filter-bar">
+        <span class="filter-label">Vista:</span>
+        <button class="filter-btn active" onclick="filterTrend('imp',this)">Importación</button>
+        <button class="filter-btn" onclick="filterTrend('exp',this)">Exportación</button>
+        <button class="filter-btn" onclick="filterTrend('all',this)">Combinado</button>
+      </div>
+      <div class="kpi-strip" id="trend-kpis"></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hdr"><div class="ch-title" id="trend-chart-title">Movimientos por día</div><div class="ch-sub" id="trend-chart-sub">—</div></div>
+        <div style="padding:16px 18px">
+          <div style="position:relative;height:220px"><canvas id="trend-chart" role="img" aria-label="Tendencia diaria">Tendencia diaria de movimientos.</canvas></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Distribución por tipo — IMP</div></div>
+          <div class="card-body" id="t-tipo-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="ch-title">Día más activo</div></div>
+          <div class="card-body">
+            <div style="text-align:center;padding:12px 0">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Fecha pico</div>
+              <div style="font-size:32px;font-family:'Inter Tight',sans-serif;font-weight:700;color:var(--gold2)" id="t-peak-day">—</div>
+              <div style="font-size:13px;color:var(--text2);margin-top:4px" id="t-peak-val">—</div>
+            </div>
+            <hr class="div-line">
+            <div id="t-day-breakdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
   </div>
 </div>
-
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const APP_ID  = 'c03c2f96-a0d0-4bcf-a0f7-70ca22112546';
 const API_KEY = 'V2-MIjZN-l76O8-Zpwku-sH3nr-OBju5-aGe55-5tI7x-zk0YB';
-const APP_NAME = 'Traficolocal-229074242';
-const BASE = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables`;
-
-async function fetchTable(table) {
-  const r = await fetch(`${BASE}/${encodeURIComponent(table)}/Action`, {
-    method: 'POST',
-    headers: { 'applicationAccessKey': API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ Action: 'Find', Properties: {}, Rows: [] })
+const BASE    = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables`;
+ 
+let IMP = [], EXP = [];
+let currentOpsFilter = 'all';
+let currentTrendView = 'imp';
+let trendChartInst = null;
+ 
+async function fetchTable(name) {
+  document.getElementById('loader-txt').textContent = `Cargando ${name}...`;
+  const r = await fetch(`${BASE}/${encodeURIComponent(name)}/Action`, {
+    method:'POST',
+    headers:{'applicationAccessKey':API_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({Action:'Find',Properties:{},Rows:[]})
   });
-  if (!r.ok) throw new Error(`HTTP ${r.status} en tabla ${table}`);
+  if(!r.ok) throw new Error(`HTTP ${r.status} — tabla ${name}`);
   const j = await r.json();
-  return j;
+  return Array.isArray(j) ? j : (j.Rows||j.rows||[]);
 }
-
-function pct(v, t) { return t ? Math.round((v/t)*100) + '%' : '0%'; }
-function pctN(v, t) { return t ? Math.round((v/t)*100) : 0; }
-
-function barRow(label, val, maxVal, total, color) {
-  const w = maxVal ? Math.round((val/maxVal)*100) : 0;
-  const p = pct(val, total);
-  return `<div class="br">
-    <div class="bl" title="${label}">${label}</div>
-    <div class="bt"><div class="bf" style="width:${w}%;background:${color}"></div></div>
-    <div class="bn">${val}</div>
-    <div class="bp">${p}</div>
-  </div>`;
-}
-
+ 
 function count(arr, key) {
-  const m = {};
-  arr.forEach(r => { const v = (r[key]||'').toString().trim(); if(v) m[v] = (m[v]||0)+1; });
+  const m={};
+  arr.forEach(r=>{const v=(r[key]||'').toString().trim().toUpperCase();if(v)m[v]=(m[v]||0)+1});
   return Object.entries(m).sort((a,b)=>b[1]-a[1]);
 }
-
-function opInitials(n) { return (n||'?').substring(0,2).toUpperCase(); }
-
-function renderBars(containerId, entries, total, color, topN=10) {
-  const top = entries.slice(0, topN);
-  const maxV = top[0] ? top[0][1] : 1;
-  let html = top.map(([k,v]) => barRow(k, v, maxV, total, color)).join('');
-  const rest = entries.length - topN;
-  if(rest > 0) html += `<div class="more-note">+${rest} más con 1–2 registros c/u</div>`;
-  document.getElementById(containerId).innerHTML = html;
+ 
+function pct(v,t){return t?Math.round((v/t)*100)+'%':'0%'}
+function pctN(v,t){return t?Math.round((v/t)*100):0}
+ 
+function barRow(label,val,maxVal,total,color,labelW='w140'){
+  const w=maxVal?Math.round((val/maxVal)*100):0;
+  return `<div class="br"><div class="bl ${labelW}" title="${label}">${label}</div><div class="bt"><div class="bf" style="width:${w}%;background:${color}"></div></div><div class="bn">${val}</div><div class="bp">${pct(val,total)}</div></div>`;
 }
-
-function formatDate(d) {
-  if(!d) return '';
-  const dt = new Date(d);
-  return dt.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric'});
+ 
+function renderBars(id,entries,total,color,topN=10,labelW='w140'){
+  const top=entries.slice(0,topN);
+  const maxV=top[0]?top[0][1]:1;
+  let h=top.map(([k,v])=>barRow(k,v,maxV,total,color,labelW)).join('');
+  const rest=entries.length-topN;
+  if(rest>0)h+=`<div class="more-note">+${rest} bodegas/clientes adicionales con 1–2 registros</div>`;
+  document.getElementById(id).innerHTML=h;
 }
-
-async function main() {
-  try {
-    document.querySelector('.loader-text').textContent = 'Cargando IMPORTACION...';
-    const impRaw = await fetchTable('IMPORTACION');
-    document.querySelector('.loader-text').textContent = 'Cargando EXPORTACION...';
-    const expRaw = await fetchTable('EXPORTACION');
-
-    const imp = Array.isArray(impRaw) ? impRaw : (impRaw.Rows || impRaw.rows || []);
-    const exp = Array.isArray(expRaw) ? expRaw : (expRaw.Rows || expRaw.rows || []);
-
-    if(!imp.length && !exp.length) throw new Error('Las tablas están vacías o los nombres no coinciden.');
-
-    const totalImp = imp.length;
-    const totalExp = exp.length;
-    const total = totalImp + totalExp;
-
-    document.getElementById('k-imp').textContent = totalImp;
-    document.getElementById('k-exp').textContent = totalExp;
-    document.getElementById('k-total').textContent = total;
-    document.getElementById('ph-imp').textContent = totalImp;
-    document.getElementById('ph-exp').textContent = totalExp;
-
-    const impOps = new Set(imp.map(r=>(r.OPERADOR||'').trim().toUpperCase()).filter(Boolean));
-    const expOps = new Set(exp.map(r=>(r.OPERADOR||'').trim().toUpperCase()).filter(Boolean));
-    const allOps = new Set([...impOps, ...expOps]);
-    document.getElementById('k-ops').textContent = allOps.size + ' operadores activos';
-
-    const expDests = count(exp, 'DESTINO');
-    document.getElementById('k-exp-sub').textContent = 'Destinos: ' + expDests.slice(0,3).map(([k])=>k).join(', ');
-
-    const tipos = count(imp, 'TIPO');
-    const cjc  = tipos.find(([k])=>k.toUpperCase().includes('CJ') && k.toUpperCase().includes('CARG'))?.[1]||0;
-    const pltc = tipos.find(([k])=>k.toUpperCase().includes('PLT') && k.toUpperCase().includes('CARG'))?.[1]||0;
-    const vac  = totalImp - cjc - pltc;
-    document.getElementById('mk-cjc').textContent  = cjc;
-    document.getElementById('mk-pltc').textContent = pltc;
-    document.getElementById('mk-vac').textContent  = vac;
-    document.getElementById('mk-cjc-p').textContent  = pct(cjc, totalImp);
-    document.getElementById('mk-pltc-p').textContent = pct(pltc, totalImp);
-    document.getElementById('mk-vac-p').textContent  = pct(vac, totalImp);
-
-    const bodegas = count(imp, 'BODEGA');
-    if(bodegas[0]) {
-      document.getElementById('k-bodega').textContent = bodegas[0][0];
-      document.getElementById('k-bodega-sub').textContent = bodegas[0][1] + ' cruces · ' + pct(bodegas[0][1], totalImp);
-    }
-    renderBars('bodega-bars', bodegas, totalImp, '#3a8fff', 10);
-
-    const clientes = count(exp, 'CLIENTE');
-    const chr  = clientes.find(([k])=>k.toUpperCase().includes('CHRYS'))?.[1]||0;
-    const inm  = clientes.find(([k])=>k.toUpperCase().includes('INMA'))?.[1]||0;
-    const otros = totalExp - chr - inm;
-    document.getElementById('mk-chr').textContent    = chr;
-    document.getElementById('mk-inm').textContent    = inm;
-    document.getElementById('mk-otros').textContent  = otros;
-    document.getElementById('mk-chr-p').textContent  = pct(chr, totalExp);
-    document.getElementById('mk-inm-p').textContent  = pct(inm, totalExp);
-    document.getElementById('mk-otros-p').textContent = pct(otros, totalExp);
-    renderBars('cliente-bars', clientes, totalExp, '#3ecf8e', 7);
-    renderBars('destino-bars', expDests, totalExp, '#3ecf8e', 5);
-
-    const fechas = count(imp, 'FECHA');
-    const sortedFechas = fechas.sort((a,b)=>new Date(a[0])-new Date(b[0]));
-    const maxDay = Math.max(...sortedFechas.map(([,v])=>v));
-    if(sortedFechas.length) {
-      const first = formatDate(sortedFechas[0][0]);
-      const last  = formatDate(sortedFechas[sortedFechas.length-1][0]);
-      document.getElementById('date-range').textContent = first + ' → ' + last;
-      const firstV = sortedFechas[0][1];
-      const lastV  = sortedFechas[sortedFechas.length-1][1];
-      const chg = firstV ? Math.round(((lastV-firstV)/firstV)*100) : 0;
-      document.getElementById('trend-sub').textContent = `+${chg}% vs primer día registrado`;
-    }
-
-    const BLUE_SHADES = ['#1a5fcc','#2470e0','#3a8fff','#5aaeff'];
-    let trendHtml = '';
-    sortedFechas.forEach(([d,v], i) => {
-      const h = Math.max(15, Math.round((v/maxDay)*100));
-      const shade = BLUE_SHADES[Math.min(i, BLUE_SHADES.length-1)];
-      const dateObj = new Date(d + 'T12:00:00');
-      const label = isNaN(dateObj) ? d : dateObj.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
-      trendHtml += `<div class="tday">
-        <div class="td-label">${label}</div>
-        <div class="td-bar-wrap"><div class="td-bar" style="height:${h}%;background:${shade}"><div class="td-num">${v}</div></div></div>
-        <div class="td-val" style="color:${shade}">${v}</div>
-      </div>`;
-    });
-    document.getElementById('trend-grid').innerHTML = trendHtml || '<div style="color:var(--text3);padding:16px">Sin datos de fecha</div>';
-
-    const impCount = {};
-    imp.forEach(r => { const op = (r.OPERADOR||'').trim().toUpperCase(); if(op) impCount[op]=(impCount[op]||0)+1; });
-    const expCount = {};
-    exp.forEach(r => { const op = (r.OPERADOR||'').trim().toUpperCase(); if(op) expCount[op]=(expCount[op]||0)+1; });
-    const allOpKeys = [...new Set([...Object.keys(impCount), ...Object.keys(expCount)])];
-    const opsSorted = allOpKeys.map(k=>({ n:k, imp:impCount[k]||0, exp:expCount[k]||0, tot:(impCount[k]||0)+(expCount[k]||0) })).sort((a,b)=>b.tot-a.tot);
-    const maxTot = opsSorted[0]?.tot || 1;
-
-    let tbody = '';
-    opsSorted.forEach(o => {
-      let tipo, cls, avCls;
-      if(o.imp>0&&o.exp>0){tipo='IMP+EXP';cls='tag-a';avCls='a';}
-      else if(o.imp>0){tipo='Solo IMP';cls='tag-b';avCls='b';}
-      else{tipo='Solo EXP';cls='tag-g';avCls='g';}
-      const wI = Math.round((o.imp/maxTot)*120);
-      const wE = Math.round((o.exp/maxTot)*120);
-      tbody += `<tr>
-        <td><span class="av ${avCls}">${opInitials(o.n)}</span>${o.n}</td>
-        <td class="r"><span class="num-imp">${o.imp}</span></td>
-        <td class="r"><span class="num-exp">${o.exp}</span></td>
-        <td class="r"><span class="num-tot">${o.tot}</span></td>
-        <td class="r"><span class="tag ${cls}">${tipo}</span></td>
-        <td><div class="op-bar-wrap">
-          ${o.imp?`<div class="op-bar-seg" style="width:${wI}px;background:var(--blue)"></div>`:''}
-          ${o.exp?`<div class="op-bar-seg" style="width:${wE}px;background:var(--green)"></div>`:''}
-        </div></td>
-      </tr>`;
-    });
-    document.getElementById('ops-tbody').innerHTML = tbody || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin operadores</td></tr>';
-
-    const topBodega = bodegas[0];
-    const topCliente = clientes[0];
-    const bimodal = opsSorted.filter(o=>o.imp>0&&o.exp>0).length;
-    const topOp = opsSorted[0];
-
-    document.getElementById('ins1').innerHTML = topBodega
-      ? `<strong>${topBodega[0]}</strong> concentra ${topBodega[1]} de ${totalImp} cruces (${pct(topBodega[1],totalImp)}). Alta dependencia de una sola bodega.`
-      : '—';
-    document.getElementById('ins2').innerHTML = topCliente
-      ? `<strong>${topCliente[0]}</strong> representa ${topCliente[1]} de ${totalExp} órdenes (${pct(topCliente[1],totalExp)}). Riesgo de concentración de cliente.`
-      : '—';
-    document.getElementById('ins3').innerHTML = `<strong>${bimodal} operadores</strong> activos en IMP y EXP. Líder: <strong>${topOp?.n||'—'}</strong> con ${topOp?.imp||0} IMP + ${topOp?.exp||0} EXP.`;
-
-    document.getElementById('last-updated').textContent = new Date().toLocaleString('es-MX');
-
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-
-  } catch(e) {
-    console.error(e);
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('error-msg').textContent = e.message || 'Error desconocido. Revisa la consola del navegador.';
-    document.getElementById('error-box').style.display = 'flex';
+ 
+function donut(canvasId,legendId,entries,total,colors){
+  const ctx=document.getElementById(canvasId).getContext('2d');
+  const labels=entries.map(([k])=>k);
+  const data=entries.map(([,v])=>v);
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}}}}
+  });
+  const leg=document.getElementById(legendId);
+  leg.innerHTML=entries.map(([k,v],i)=>`<div class="dl-row"><div class="dl-dot" style="background:${colors[i]}"></div><div class="dl-name">${k}</div><div class="dl-val">${v}</div><div class="dl-pct">${pct(v,total)}</div></div>`).join('');
+}
+ 
+function fmtDate(d){
+  try{const dt=new Date(d+'T12:00:00');return isNaN(dt)?d:dt.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}catch{return d}
+}
+ 
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+ 
+function filterOps(type,btn){
+  currentOpsFilter=type;
+  document.querySelectorAll('#page-operadores .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOpsPage();
+}
+ 
+function filterTrend(type,btn){
+  currentTrendView=type;
+  document.querySelectorAll('#page-tendencia .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrendPage();
+}
+ 
+function closeOpDetail(){
+  document.getElementById('op-detail').classList.remove('visible');
+}
+ 
+function openOpDetail(op){
+  const d=document.getElementById('op-detail');
+  document.getElementById('op-det-av').textContent=op.n.substring(0,2);
+  document.getElementById('op-det-name').textContent=op.n;
+  let tipo=op.imp>0&&op.exp>0?'IMP + EXP':op.imp>0?'Solo IMP':'Solo EXP';
+  document.getElementById('op-det-sub').textContent=tipo+' · '+op.tot+' movimientos totales';
+  document.getElementById('op-det-imp').textContent=op.imp;
+  document.getElementById('op-det-exp').textContent=op.exp;
+  document.getElementById('op-det-tot').textContent=op.tot;
+  document.getElementById('op-det-tipo').textContent=tipo;
+  const bodegas=IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===op.n).map(r=>(r.BODEGA||'').trim()).filter(Boolean);
+  const ubods=[...new Set(bodegas)];
+  document.getElementById('op-det-bodegas').textContent=ubods.length?ubods.join(', '):'Sin registro';
+  d.classList.add('visible');
+  d.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+ 
+function renderOpsPage(){
+  const impC={},expC={};
+  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)impC[k]=(impC[k]||0)+1});
+  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)expC[k]=(expC[k]||0)+1});
+  let ops=[...new Set([...Object.keys(impC),...Object.keys(expC)])].map(k=>({n:k,imp:impC[k]||0,exp:expC[k]||0,tot:(impC[k]||0)+(expC[k]||0)}));
+ 
+  if(currentOpsFilter==='both')ops=ops.filter(o=>o.imp>0&&o.exp>0);
+  else if(currentOpsFilter==='imp')ops=ops.filter(o=>o.imp>0&&o.exp===0);
+  else if(currentOpsFilter==='exp')ops=ops.filter(o=>o.exp>0&&o.imp===0);
+ 
+  const sortBy=document.getElementById('ops-sort').value;
+  if(sortBy==='imp')ops.sort((a,b)=>b.imp-a.imp);
+  else if(sortBy==='exp')ops.sort((a,b)=>b.exp-a.exp);
+  else if(sortBy==='name')ops.sort((a,b)=>a.n.localeCompare(b.n));
+  else ops.sort((a,b)=>b.tot-a.tot);
+ 
+  document.getElementById('ops-count-lbl').textContent=ops.length+' operadores · haz clic para ver detalle';
+  const maxT=ops[0]?.tot||1;
+  let tbody='';
+  ops.forEach((o,i)=>{
+    let cls,avCls;
+    if(o.imp>0&&o.exp>0){cls='badge-gold';avCls='av-g';}
+    else if(o.imp>0){cls='badge-blue';avCls='av-b';}
+    else{cls='badge-green';avCls='av-gr';}
+    const tipo=o.imp>0&&o.exp>0?'IMP+EXP':o.imp>0?'Solo IMP':'Solo EXP';
+    const wI=Math.round((o.imp/maxT)*80);
+    const wE=Math.round((o.exp/maxT)*80);
+    tbody+=`<tr onclick="openOpDetail(${JSON.stringify(o).replace(/"/g,'&quot;')})">
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td><span class="av ${avCls}">${o.n.substring(0,2)}</span>${o.n}</td>
+      <td class="r" style="color:var(--blue2)">${o.imp}</td>
+      <td class="r" style="color:var(--gold2)">${o.exp}</td>
+      <td class="r">${o.tot}</td>
+      <td><span class="badge ${cls}">${tipo}</span></td>
+      <td><div class="mini-bar-wrap">${o.imp?`<div class="mini-seg" style="width:${wI}px;background:var(--blue2)"></div>`:''}${o.exp?`<div class="mini-seg" style="width:${wE}px;background:var(--gold2)"></div>`:''}</div></td>
+    </tr>`;
+  });
+  document.getElementById('ops-tbody').innerHTML=tbody||'<tr><td colspan="7" class="empty">Sin operadores en este filtro</td></tr>';
+}
+ 
+function renderTrendPage(){
+  const impByDay={},expByDay={};
+  IMP.forEach(r=>{const d=(r.FECHA||'').toString().substring(0,10);if(d)impByDay[d]=(impByDay[d]||0)+1});
+  EXP.forEach(r=>{const d=(r.FECHA||r.LAR||'').toString().substring(0,10);if(d)expByDay[d]=(expByDay[d]||0)+1});
+  const allDays=[...new Set([...Object.keys(impByDay),...Object.keys(expByDay)])].sort();
+ 
+  const labels=allDays.map(d=>fmtDate(d));
+  let dataMain=[], dataSecond=[], colorMain, colorSecond, titleStr;
+ 
+  if(currentTrendView==='imp'){
+    dataMain=allDays.map(d=>impByDay[d]||0);
+    colorMain='#2880e0'; titleStr='Cruces por día — Importación';
+    document.getElementById('trend-chart-sub').textContent='Solo registros IMP';
+  } else if(currentTrendView==='exp'){
+    dataMain=allDays.map(d=>expByDay[d]||0);
+    colorMain='#c9a227'; titleStr='Órdenes por día — Exportación';
+    document.getElementById('trend-chart-sub').textContent='Solo registros EXP';
+  } else {
+    dataMain=allDays.map(d=>impByDay[d]||0);
+    dataSecond=allDays.map(d=>expByDay[d]||0);
+    colorMain='#2880e0'; colorSecond='#c9a227'; titleStr='Movimientos por día — IMP + EXP';
+    document.getElementById('trend-chart-sub').textContent='IMP en azul · EXP en dorado';
+  }
+  document.getElementById('trend-chart-title').textContent=titleStr;
+ 
+  const datasets=[{label:'IMP',data:dataMain,backgroundColor:colorMain+'33',borderColor:colorMain,borderWidth:2,pointBackgroundColor:colorMain,pointRadius:4,tension:0.3,fill:true}];
+  if(dataSecond.length&&currentTrendView==='all') datasets.push({label:'EXP',data:dataSecond,backgroundColor:colorSecond+'33',borderColor:colorSecond,borderWidth:2,pointBackgroundColor:colorSecond,pointRadius:4,tension:0.3,fill:true});
+ 
+  if(trendChartInst) trendChartInst.destroy();
+  trendChartInst=new Chart(document.getElementById('trend-chart').getContext('2d'),{
+    type:'line',data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:currentTrendView==='all',labels:{color:'#8a97b0',font:{size:11}}}},scales:{x:{ticks:{color:'#4a5570',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4a5570',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,0.06)'}}}}
+  });
+ 
+  const impTypes=count(IMP,'TIPO');
+  const impTot=IMP.length;
+  let tBars='';
+  const maxV2=impTypes[0]?impTypes[0][1]:1;
+  impTypes.forEach(([k,v])=>tBars+=barRow(k,v,maxV2,impTot,'#2880e0','w110'));
+  document.getElementById('t-tipo-bars').innerHTML=tBars;
+ 
+  const peakDay=allDays.reduce((best,d)=>{const v=(impByDay[d]||0)+(expByDay[d]||0);return v>(best.v||0)?{d,v}:best},{});
+  document.getElementById('t-peak-day').textContent=fmtDate(peakDay.d)||'—';
+  document.getElementById('t-peak-val').textContent=(peakDay.v||0)+' movimientos totales';
+  document.getElementById('t-day-breakdown').innerHTML=peakDay.d?`<div class="br"><div class="bl w90">IMP ese día</div><div class="bt"><div class="bf" style="width:${pctN(impByDay[peakDay.d]||0,peakDay.v)}%;background:var(--blue2)"></div></div><div class="bn">${impByDay[peakDay.d]||0}</div></div><div class="br"><div class="bl w90">EXP ese día</div><div class="bt"><div class="bf" style="width:${pctN(expByDay[peakDay.d]||0,peakDay.v)}%;background:var(--gold2)"></div></div><div class="bn">${expByDay[peakDay.d]||0}</div></div>`:'';
+ 
+  const totI=IMP.length,totE=EXP.length;
+  const maxDay=Math.max(...allDays.map(d=>(impByDay[d]||0)+(expByDay[d]||0)),1);
+  const avgI=allDays.length?Math.round(totI/allDays.length):0;
+  const avgE=allDays.length?Math.round(totE/allDays.length):0;
+  document.getElementById('trend-kpis').innerHTML=`
+    <div class="kpi blue"><div class="kl">Promedio IMP/día</div><div class="kv">${avgI}</div><div class="ks">cruces por jornada</div></div>
+    <div class="kpi gold"><div class="kl">Promedio EXP/día</div><div class="kv">${avgE}</div><div class="ks">órdenes por jornada</div></div>
+    <div class="kpi white"><div class="kl">Días con datos</div><div class="kv">${allDays.length}</div><div class="ks">${allDays.length?fmtDate(allDays[0])+' → '+fmtDate(allDays[allDays.length-1]):'—'}</div></div>
+    <div class="kpi green"><div class="kl">Pico máximo</div><div class="kv">${peakDay.v||0}</div><div class="ks">${fmtDate(peakDay.d)||'—'}</div></div>`;
+}
+ 
+function renderAll(){
+  const totI=IMP.length, totE=EXP.length, tot=totI+totE;
+  const impC={},expC={};
+  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)impC[k]=(impC[k]||0)+1});
+  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)expC[k]=(expC[k]||0)+1});
+  const allOpsKeys=[...new Set([...Object.keys(impC),...Object.keys(expC)])];
+  const opsSorted=allOpsKeys.map(k=>({n:k,imp:impC[k]||0,exp:expC[k]||0,tot:(impC[k]||0)+(expC[k]||0)})).sort((a,b)=>b.tot-a.tot);
+  const bodegas=count(IMP,'BODEGA');
+  const tipos=count(IMP,'TIPO');
+  const clientes=count(EXP,'CLIENTE');
+  const destinos=count(EXP,'DESTINO');
+  const impByDay={};
+  IMP.forEach(r=>{const d=(r.FECHA||'').toString().substring(0,10);if(d)impByDay[d]=(impByDay[d]||0)+1});
+  const days=Object.keys(impByDay).sort();
+ 
+  // --- GENERAL PAGE ---
+  document.getElementById('g-imp').textContent=totI;
+  document.getElementById('g-exp').textContent=totE;
+  document.getElementById('g-tot').textContent=tot;
+  document.getElementById('g-days').textContent=days.length;
+  document.getElementById('g-exp-s').textContent='Destinos: '+(destinos.slice(0,2).map(([k])=>k).join(', ')||'—');
+  document.getElementById('g-ops-s').textContent=allOpsKeys.length+' operadores activos';
+  document.getElementById('g-range').textContent=days.length?fmtDate(days[0])+' → '+fmtDate(days[days.length-1]):'—';
+  if(bodegas[0]){
+    document.getElementById('gh-bod-badge').textContent=bodegas[0][0];
+    document.getElementById('gm-bod1').textContent=bodegas[0][0];
+    document.getElementById('gm-bod1s').textContent=bodegas[0][1]+' cruces · '+pct(bodegas[0][1],totI);
+    if(bodegas[1]){document.getElementById('gm-bod2').textContent=bodegas[1][0];document.getElementById('gm-bod2s').textContent=bodegas[1][1]+' cruces';}
+    const others=bodegas.slice(2).reduce((s,[,v])=>s+v,0);
+    document.getElementById('gm-bodN').textContent=others;
+    document.getElementById('gm-bodNs').textContent=(bodegas.length-2)+' bodegas más';
+    document.getElementById('gh-bod-sub').textContent=bodegas.length+' bodegas en total · '+totI+' cruces';
+  }
+  renderBars('g-bodega-bars',bodegas,totI,'#2880e0',8);
+  if(clientes[0]){
+    document.getElementById('gh-cli-badge').textContent=clientes[0][0]+' '+pct(clientes[0][1],totE);
+  }
+  renderBars('g-cliente-bars',clientes,totE,'#c9a227',6,'w110');
+  const col4=['#2880e0','#c9a227','#22c97a','#8a97b0'];
+  donut('donut-tipo','donut-legend-tipo',tipos.slice(0,4),totI,col4);
+  const maxTop=opsSorted[0]?.tot||1;
+  document.getElementById('g-top-ops').innerHTML=opsSorted.slice(0,6).map(o=>`<div class="br"><div class="bl w110">${o.n}</div><div class="bt"><div class="bf" style="width:${Math.round((o.tot/maxTop)*100)}%;background:${o.imp>0&&o.exp>0?'#c9a227':o.imp>0?'#2880e0':'#22c97a'}"></div></div><div class="bn">${o.tot}</div><div class="bp" style="display:flex;gap:3px"><span style="color:var(--blue2);font-size:10px">${o.imp}</span><span style="color:var(--text3);">/</span><span style="color:var(--gold2);font-size:10px">${o.exp}</span></div></div>`).join('');
+  const topB=bodegas[0],topC=clientes[0],bimodal=opsSorted.filter(o=>o.imp>0&&o.exp>0).length,topOp=opsSorted[0];
+  document.getElementById('ins-g1').innerHTML=topB?`<strong>${topB[0]}</strong> concentra ${topB[1]} de ${totI} cruces (${pct(topB[1],totI)}). Alta dependencia de una sola bodega.`:'—';
+  document.getElementById('ins-g2').innerHTML=topC?`<strong>${topC[0]}</strong> representa ${topC[1]} de ${totE} órdenes (${pct(topC[1],totE)}). Riesgo de concentración de cliente.`:'—';
+  document.getElementById('ins-g3').innerHTML=`<strong>${bimodal} operadores</strong> activos en IMP y EXP. Líder: <strong>${topOp?.n||'—'}</strong> con ${topOp?.imp||0}+${topOp?.exp||0}.`;
+ 
+  // --- IMP PAGE ---
+  const cjc=tipos.find(([k])=>k.includes('CJ')&&k.includes('CARG'))?.[1]||0;
+  const pltc=tipos.find(([k])=>k.includes('PLT')&&k.includes('CARG'))?.[1]||0;
+  const vac=totI-cjc-pltc;
+  document.getElementById('i-tot').textContent=totI;
+  document.getElementById('i-cjc').textContent=cjc;document.getElementById('i-cjc-s').textContent=pct(cjc,totI);
+  document.getElementById('i-pltc').textContent=pltc;document.getElementById('i-pltc-s').textContent=pct(pltc,totI);
+  document.getElementById('i-vac').textContent=vac;document.getElementById('i-vac-s').textContent=pct(vac,totI);
+  renderBars('i-bodega-bars',bodegas,totI,'#2880e0',12);
+  donut('donut-imp','donut-legend-imp',tipos.slice(0,4),totI,col4);
+  // Trend bars for imp
+  const sortedDays=days.sort();
+  const maxDayV=Math.max(...sortedDays.map(d=>impByDay[d]||0),1);
+  document.getElementById('i-trend-sub').textContent=sortedDays.length+' días · '+totI+' cruces total';
+  document.getElementById('i-trend-bars').innerHTML=sortedDays.map(d=>{
+    const v=impByDay[d]||0;const h=Math.max(10,Math.round((v/maxDayV)*80));
+    const shade=v===maxDayV?'#1e6abf':v>=maxDayV*0.75?'#2880e0':v>=maxDayV*0.5?'#378add':'#5aaeff';
+    return `<div class="trend-col"><div class="tc-val">${v}</div><div class="tc-bar" style="height:${h}px;background:${shade}"></div><div class="tc-lbl">${fmtDate(d)}</div></div>`;
+  }).join('');
+  // IMP ops table
+  const impOpsArr=Object.entries(impC).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('i-ops-tbody').innerHTML=impOpsArr.map(([k,v])=>{
+    const bods=[...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.BODEGA||'').trim()))].slice(0,2).join(', ');
+    return `<tr><td><span class="av av-b">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--blue2)">${v}</td><td class="r">${pct(v,totI)}</td><td style="font-size:11px;color:var(--text3)">${bods}</td></tr>`;
+  }).join('');
+ 
+  // --- EXP PAGE ---
+  document.getElementById('e-tot').textContent=totE;
+  if(clientes[0]){document.getElementById('e-cli1').textContent=clientes[0][0];document.getElementById('e-cli1-s').textContent=clientes[0][1]+' órdenes · '+pct(clientes[0][1],totE);}
+  if(destinos[0]){document.getElementById('e-dest1').textContent=destinos[0][0];document.getElementById('e-dest1-s').textContent=destinos[0][1]+' órdenes · '+pct(destinos[0][1],totE);}
+  const otros=clientes.slice(1).reduce((s,[,v])=>s+v,0);
+  document.getElementById('e-otros').textContent=otros;
+  document.getElementById('e-otros-s').textContent=(clientes.length-1)+' otros clientes';
+  renderBars('e-cliente-bars',clientes,totE,'#c9a227',7,'w110');
+  renderBars('e-destino-bars',destinos,totE,'#e8b830',5,'w110');
+  const expOpsArr=Object.entries(expC).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('e-ops-tbody').innerHTML=expOpsArr.map(([k,v])=>{
+    const clis=[...new Set(EXP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.CLIENTE||'').trim()))].slice(0,2).join(', ');
+    return `<tr><td><span class="av av-g">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--gold2)">${v}</td><td class="r">${pct(v,totE)}</td><td style="font-size:11px;color:var(--text3)">${clis}</td></tr>`;
+  }).join('');
+ 
+  renderOpsPage();
+  renderTrendPage();
+  document.getElementById('last-upd').textContent=new Date().toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+ 
+async function refreshData(){
+  const btn=document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  try{
+    IMP=await fetchTable('IMPORTACION');
+    EXP=await fetchTable('EXPORTACION');
+    renderAll();
+  }catch(e){alert('Error al actualizar: '+e.message);}
+  btn.classList.remove('spinning');
+}
+ 
+async function main(){
+  try{
+    IMP=await fetchTable('IMPORTACION');
+    EXP=await fetchTable('EXPORTACION');
+    renderAll();
+    document.getElementById('loader').style.display='none';
+    document.getElementById('app').style.display='block';
+    setInterval(refreshData, 5*60*1000);
+  }catch(e){
+    document.getElementById('loader-txt').textContent='Error: '+e.message+' · Verifica API Key y conexión.';
+    document.getElementById('loader-txt').style.color='#ff4d6a';
   }
 }
-
 main();
 </script>
 </body>
