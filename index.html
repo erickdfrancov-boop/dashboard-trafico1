@@ -2,797 +2,841 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TransMex — Dashboard Operativo</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TransMex · Operaciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --navy: #0a1628;
-  --navy2: #0f1e35;
-  --navy3: #162540;
-  --navy4: #1d2f50;
-  --navy5: #243660;
-  --gold: #c9a227;
-  --gold2: #e8b830;
-  --gold3: #f5cc50;
-  --gold-bg: rgba(201,162,39,0.1);
-  --gold-border: rgba(201,162,39,0.25);
-  --blue: #1e6abf;
-  --blue2: #2880e0;
-  --blue-bg: rgba(30,106,191,0.12);
-  --blue-border: rgba(30,106,191,0.3);
-  --green: #22c97a;
-  --green-bg: rgba(34,201,122,0.1);
-  --red: #ff4d6a;
-  --red-bg: rgba(255,77,106,0.1);
-  --text: #e8edf5;
-  --text2: #8a97b0;
-  --text3: #4a5570;
-  --border: rgba(255,255,255,0.06);
-  --border2: rgba(255,255,255,0.1);
-  --radius: 10px;
-  --radius-lg: 14px;
-  --shadow: 0 2px 16px rgba(0,0,0,0.4);
+:root{
+  --bg0:#06080d;--bg1:#080c12;--bg2:#0c1019;--bg3:#101520;--bg4:#151c29;--bg5:#1a2233;
+  --rim:rgba(255,255,255,0.05);--rim2:rgba(255,255,255,0.09);--rim3:rgba(255,255,255,0.14);
+  --tx:#dce4f0;--tx2:#7d8ea8;--tx3:#3a4560;
+  --au:#b8880f;--au2:#d4a020;--au3:#f0c040;--au-bg:rgba(184,136,15,0.10);--au-bd:rgba(212,160,32,0.22);
+  --ab:#1250a8;--ab2:#1e6ad4;--ab3:#5aabff;--ab-bg:rgba(18,80,168,0.12);--ab-bd:rgba(30,106,212,0.28);
+  --ae:#0a8a5a;--ae2:#10b876;--ae-bg:rgba(10,138,90,0.11);--ae-bd:rgba(16,184,118,0.22);
+  --ar:#a01828;--ar2:#d42038;--ar-bg:rgba(160,24,40,0.11);
+  --r:8px;--r2:12px;--r3:16px;
+  --fD:'Syne',sans-serif;--fB:'DM Sans',sans-serif;--fM:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--navy);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
- 
+html,body{background:var(--bg0);color:var(--tx);font-family:var(--fB);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+
 /* LOADER */
-#loader{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:999}
-.loader-logo{display:flex;align-items:center;gap:12px}
-.logo-shield{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--blue));clip-path:polygon(50% 0%,100% 15%,100% 60%,50% 100%,0% 60%,0% 15%);display:flex;align-items:center;justify-content:center;font-family:'Inter Tight',sans-serif;font-weight:700;font-size:22px;color:white}
-.loader-name{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.5px;color:var(--text)}
-.loader-name span{color:var(--gold)}
-.loader-bar{width:200px;height:2px;background:var(--navy4);border-radius:2px;overflow:hidden}
-.loader-fill{height:2px;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:2px;width:0%;animation:load 2s ease forwards}
-@keyframes load{to{width:100%}}
-.loader-txt{font-size:12px;color:var(--text3);letter-spacing:0.5px}
- 
+#loader{position:fixed;inset:0;background:var(--bg0);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;z-index:9999}
+.ld-shield{width:64px;height:64px}
+.ld-shield svg{width:64px;height:64px;filter:drop-shadow(0 0 18px rgba(184,136,15,.4))}
+.ld-name{font-family:var(--fD);font-size:26px;font-weight:800;color:var(--tx);letter-spacing:-.3px}
+.ld-name b{color:var(--au2);font-weight:800}
+.ld-bar{width:160px;height:1px;background:var(--bg4);overflow:hidden;position:relative}
+.ld-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--au2),transparent);animation:scan 1.6s ease infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.ld-msg{font-family:var(--fM);font-size:10px;color:var(--tx3);letter-spacing:1.2px;text-transform:uppercase}
+
+/* SHELL */
+#app{display:none}
+
 /* TOPBAR */
-#topbar{background:var(--navy2);border-bottom:1px solid var(--border2);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
-.tb-brand{display:flex;align-items:center;gap:12px}
-.tb-shield{width:34px;height:34px;position:relative}
-.tb-shield svg{width:34px;height:34px}
-.tb-names{display:flex;flex-direction:column}
-.tb-title{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:16px;letter-spacing:-0.3px;color:var(--text)}
-.tb-title span{color:var(--gold)}
-.tb-sub{font-size:10px;color:var(--text3);letter-spacing:0.4px;text-transform:uppercase}
-.tb-right{display:flex;align-items:center;gap:12px}
-.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--green);background:var(--green-bg);padding:5px 12px;border-radius:100px;border:1px solid rgba(34,201,122,0.2);cursor:pointer;transition:all .2s}
-.live-badge:hover{background:rgba(34,201,122,0.18)}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.last-upd{font-size:11px;color:var(--text3)}
-#refresh-btn{background:var(--navy4);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
-#refresh-btn:hover{background:var(--navy5);color:var(--text)}
-#refresh-btn svg{transition:transform .5s}
-#refresh-btn.spinning svg{animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
- 
-/* NAV TABS */
-#navtabs{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px}
-.nav-tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:0.2px;white-space:nowrap}
-.nav-tab:hover{color:var(--text2)}
-.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
- 
+#bar{position:sticky;top:0;z-index:200;height:56px;background:rgba(6,8,13,.94);backdrop-filter:blur(24px);border-bottom:1px solid var(--rim2);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 1px 0 var(--rim)}
+.b-brand{display:flex;align-items:center;gap:11px}
+.b-shield svg{width:32px;height:32px;filter:drop-shadow(0 0 6px rgba(184,136,15,.28))}
+.b-name{font-family:var(--fD);font-size:16px;font-weight:800;letter-spacing:-.2px}
+.b-name b{color:var(--au2)}
+.b-sub{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--tx3);font-family:var(--fM);margin-top:1px}
+.b-nav{display:flex;gap:1px}
+.n-tab{background:none;border:none;padding:6px 14px;font-size:12px;font-weight:500;color:var(--tx3);cursor:pointer;border-radius:6px;transition:all .18s;font-family:var(--fB);white-space:nowrap;position:relative}
+.n-tab:hover{color:var(--tx2);background:var(--rim)}
+.n-tab.on{color:var(--au2);background:var(--au-bg)}
+.n-tab.on::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:16px;height:2px;background:var(--au2);border-radius:2px}
+.n-tab.hoy-t{color:var(--ae2)!important}
+.n-tab.hoy-t.on{background:var(--ae-bg)!important}
+.n-tab.hoy-t.on::after{background:var(--ae2)!important}
+.b-right{display:flex;align-items:center;gap:9px}
+.live{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--ae2);background:var(--ae-bg);border:1px solid var(--ae-bd);padding:4px 10px;border-radius:100px;font-family:var(--fM);letter-spacing:.4px}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--ae2);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.4)}}
+.upd{font-size:10px;color:var(--tx3);font-family:var(--fM)}
+#rbtn{background:var(--bg4);border:1px solid var(--rim2);color:var(--tx2);padding:5px 11px;border-radius:6px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;font-family:var(--fB)}
+#rbtn:hover{background:var(--bg5);color:var(--tx)}
+#rbtn svg{transition:transform .5s}
+#rbtn.spin svg{animation:rot .5s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
 /* MAIN */
-#main{padding:20px 24px 48px;max-width:1200px;margin:0 auto}
- 
-/* PAGES */
-.page{display:none}
-.page.active{display:block}
- 
-/* KPI STRIP */
-.kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.kpi{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;transition:border-color .2s}
-.kpi:hover{border-color:var(--border2)}
-.kpi .kl{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);margin-bottom:8px}
-.kpi .kv{font-size:30px;font-family:'Inter Tight',sans-serif;font-weight:700;line-height:1;letter-spacing:-1px}
-.kpi .ks{font-size:11px;color:var(--text3);margin-top:6px}
-.kpi .kt{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:100px;margin-top:6px}
-.kpi.blue .kv{color:var(--blue2)}
-.kpi.gold .kv{color:var(--gold2)}
-.kpi.green .kv{color:var(--green)}
-.kpi.white .kv{color:var(--text)}
- 
-/* GRID 2 */
-.g2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
-.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
-.g2b{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;margin-bottom:14px}
- 
+#main{padding:22px 24px 56px;max-width:1280px;margin:0 auto}
+.pg{display:none;animation:up .3s ease}
+.pg.on{display:block}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI ROW */
+.krow{display:grid;gap:10px;margin-bottom:14px}
+.k4{grid-template-columns:repeat(4,1fr)}
+.k3{grid-template-columns:repeat(3,1fr)}
+.k5{grid-template-columns:repeat(5,1fr)}
+.kpi{background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r2);padding:17px 19px;position:relative;overflow:hidden;transition:border-color .2s,transform .18s}
+.kpi:hover{border-color:var(--rim2);transform:translateY(-1px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1px}
+.kpi.au::before{background:linear-gradient(90deg,transparent,var(--au2),transparent)}
+.kpi.ab::before{background:linear-gradient(90deg,transparent,var(--ab2),transparent)}
+.kpi.ae::before{background:linear-gradient(90deg,transparent,var(--ae2),transparent)}
+.kpi.pl::before{background:linear-gradient(90deg,transparent,var(--rim3),transparent)}
+.k-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.6px;color:var(--tx3);font-family:var(--fM);margin-bottom:9px}
+.k-val{font-family:var(--fD);font-size:32px;font-weight:800;line-height:1;letter-spacing:-1.5px}
+.kpi.au .k-val{color:var(--au2)}
+.kpi.ab .k-val{color:var(--ab3)}
+.kpi.ae .k-val{color:var(--ae2)}
+.kpi.pl .k-val{color:var(--tx)}
+.k-sub{font-size:11px;color:var(--tx3);margin-top:6px}
+.k-tag{display:inline-flex;align-items:center;font-size:9px;font-family:var(--fM);padding:2px 7px;border-radius:100px;margin-top:5px}
+.kpi.au .k-tag{background:var(--au-bg);color:var(--au2)}
+.kpi.ab .k-tag{background:var(--ab-bg);color:var(--ab3)}
+.kpi.ae .k-tag{background:var(--ae-bg);color:var(--ae2)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:13px;margin-bottom:13px}
+.g2r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:13px;margin-bottom:13px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:13px}
+.mb{margin-bottom:13px}
+
 /* CARD */
-.card{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border)}
-.card-hdr .ch-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2)}
-.card-hdr .ch-count{font-size:22px;font-family:'Inter Tight',sans-serif;font-weight:700;color:var(--text)}
-.card-hdr .ch-sub{font-size:11px;color:var(--text3);margin-top:1px}
-.card-body{padding:14px 18px}
- 
-/* BADGE */
-.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px}
-.badge-blue{background:var(--blue-bg);color:var(--blue2);border:1px solid var(--blue-border)}
-.badge-gold{background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold-border)}
-.badge-green{background:var(--green-bg);color:var(--green)}
-.badge-red{background:var(--red-bg);color:var(--red)}
- 
-/* BARS */
-.br{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.bl{font-size:12px;color:var(--text2);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bl.w110{width:110px}
-.bl.w140{width:140px}
-.bl.w90{width:90px}
-.bt{flex:1;background:var(--navy4);border-radius:3px;height:6px;overflow:hidden}
-.bf{height:6px;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
-.bn{font-size:12px;font-weight:600;color:var(--text);width:24px;text-align:right;flex-shrink:0;font-family:'Inter Tight',sans-serif}
-.bp{font-size:11px;color:var(--text3);width:34px;text-align:right;flex-shrink:0}
- 
-/* TREND BARS */
-.trend-cols{display:flex;align-items:flex-end;gap:6px;height:90px;padding:0 4px}
-.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-.trend-col .tc-bar{width:100%;border-radius:4px 4px 0 0;transition:height .8s cubic-bezier(.4,0,.2,1),opacity .2s}
-.trend-col:hover .tc-bar{opacity:0.8}
-.trend-col .tc-val{font-size:10px;font-weight:600;color:var(--text2);font-family:'Inter Tight',sans-serif}
-.trend-col .tc-lbl{font-size:9px;color:var(--text3);white-space:nowrap}
- 
-/* DONUT */
-.donut-wrap{display:flex;align-items:center;gap:20px}
-.donut-legend{flex:1;display:flex;flex-direction:column;gap:8px}
-.dl-row{display:flex;align-items:center;gap:8px}
-.dl-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-.dl-name{font-size:12px;color:var(--text2);flex:1}
-.dl-val{font-size:12px;font-weight:600;color:var(--text);font-family:'Inter Tight',sans-serif}
-.dl-pct{font-size:11px;color:var(--text3);margin-left:2px}
- 
-/* OPERATORS TABLE */
-.ops-wrap{overflow-x:auto}
-.ops-tbl{width:100%;border-collapse:collapse;min-width:500px}
-.ops-tbl th{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);font-weight:600;background:var(--navy3)}
-.ops-tbl th.r{text-align:right}
-.ops-tbl td{font-size:12px;color:var(--text);padding:9px 12px;border-bottom:1px solid var(--border)}
-.ops-tbl td.r{text-align:right;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:13px}
-.ops-tbl tbody tr{cursor:pointer;transition:background .15s}
-.ops-tbl tbody tr:hover td{background:var(--navy3)}
-.ops-tbl tbody tr:last-child td{border-bottom:none}
-.av{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:8px;vertical-align:middle;flex-shrink:0;font-family:'Inter Tight',sans-serif}
-.av-b{background:var(--blue-bg);color:var(--blue2);border:1px solid var(--blue-border)}
-.av-g{background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold-border)}
-.av-gr{background:var(--green-bg);color:var(--green)}
-.mini-bar-wrap{display:flex;gap:2px;align-items:center;min-width:80px}
-.mini-seg{height:5px;border-radius:2px;min-width:3px}
- 
-/* FILTER BAR */
-.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.filter-label{font-size:11px;color:var(--text3);letter-spacing:0.3px}
-.filter-btn{background:var(--navy3);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
-.filter-btn:hover{background:var(--navy4);color:var(--text)}
-.filter-btn.active{background:var(--gold-bg);color:var(--gold2);border-color:var(--gold-border)}
-select.filter-sel{background:var(--navy3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;outline:none}
-select.filter-sel:focus{border-color:var(--gold-border)}
- 
-/* OPERATOR DETAIL */
-.op-detail-card{background:var(--navy2);border:1px solid var(--gold-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;display:none}
-.op-detail-card.visible{display:block;animation:fadeUp .3s ease}
-.op-detail-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.op-detail-name{display:flex;align-items:center;gap:12px}
-.op-avatar-lg{width:44px;height:44px;border-radius:50%;background:var(--gold-bg);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gold2);font-family:'Inter Tight',sans-serif}
-.op-detail-close{background:var(--navy4);border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.op-detail-close:hover{color:var(--text);background:var(--navy5)}
-.op-stat-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.op-stat{background:var(--navy3);border-radius:8px;padding:12px 14px;text-align:center}
-.op-stat .osl{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text3);margin-bottom:4px}
-.op-stat .osv{font-size:22px;font-weight:700;font-family:'Inter Tight',sans-serif}
- 
-/* INSIGHTS */
-.ins-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
-.ins{background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
-.ins::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0}
-.ins.i-blue::before{background:var(--blue2)}
-.ins.i-gold::before{background:var(--gold)}
-.ins.i-green::before{background:var(--green)}
-.ins.i-red::before{background:var(--red)}
-.ins .il{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:6px}
-.ins .iv{font-size:12px;color:var(--text2);line-height:1.6}
-.ins .iv strong{color:var(--text);font-weight:600}
- 
-/* DIVIDER */
-.div-line{border:none;border-top:1px solid var(--border);margin:12px 0}
- 
-/* SECTION LABEL */
-.sec-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:10px;font-weight:600}
- 
-/* MORE NOTE */
-.more-note{font-size:11px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)}
- 
-/* PAGE TRANSITION */
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.page.active{animation:fadeUp .3s ease}
- 
-/* EMPTY STATE */
-.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
- 
-/* MINI STATS ROW */
-.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
-.ms{padding:12px 16px;border-right:1px solid var(--border)}
+.card{background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r3);overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:var(--rim2)}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rim)}
+.ct{font-family:var(--fD);font-size:12px;font-weight:700;color:var(--tx2);letter-spacing:.1px}
+.cs{font-size:10px;color:var(--tx3);margin-top:2px;font-family:var(--fM)}
+.cb{padding:14px 18px}
+
+/* CHIP */
+.chip{font-size:9px;padding:3px 8px;border-radius:100px;font-family:var(--fM);letter-spacing:.3px;white-space:nowrap}
+.chip.au{background:var(--au-bg);color:var(--au2);border:1px solid var(--au-bd)}
+.chip.ab{background:var(--ab-bg);color:var(--ab3);border:1px solid var(--ab-bd)}
+.chip.ae{background:var(--ae-bg);color:var(--ae2);border:1px solid var(--ae-bd)}
+.chip.pl{background:var(--rim);color:var(--tx2);border:1px solid var(--rim2)}
+
+/* MS ROW */
+.msr{display:grid;border-bottom:1px solid var(--rim)}
+.msr.c3{grid-template-columns:repeat(3,1fr)}
+.msr.c4{grid-template-columns:repeat(4,1fr)}
+.ms{padding:11px 16px;border-right:1px solid var(--rim)}
 .ms:last-child{border-right:none}
-.ms .msl{font-size:10px;text-transform:uppercase;letter-spacing:0.4px;color:var(--text3);margin-bottom:4px}
-.ms .msv{font-size:20px;font-weight:700;font-family:'Inter Tight',sans-serif}
-.ms .mss{font-size:11px;color:var(--text3);margin-top:2px}
- 
+.ms .ml{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx3);font-family:var(--fM);margin-bottom:4px}
+.ms .mv{font-size:19px;font-weight:800;font-family:var(--fD)}
+.ms .ms2{font-size:10px;color:var(--tx3);margin-top:1px;font-family:var(--fM)}
+
+/* BARS */
+.br{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.bl{font-size:12px;color:var(--tx2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl.w120{width:120px}.bl.w100{width:100px}.bl.w90{width:90px}
+.bt{flex:1;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden}
+.bf{height:5px;border-radius:3px;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+.bn{font-size:12px;font-weight:500;color:var(--tx);width:22px;text-align:right;flex-shrink:0;font-family:var(--fM)}
+.bp{font-size:10px;color:var(--tx3);width:30px;text-align:right;flex-shrink:0;font-family:var(--fM)}
+.more{font-size:10px;color:var(--tx3);margin-top:7px;padding-top:7px;border-top:1px solid var(--rim);font-family:var(--fM)}
+
+/* DONUT */
+.dw{display:flex;align-items:center;gap:20px}
+.dl{flex:1;display:flex;flex-direction:column;gap:8px}
+.dr{display:flex;align-items:center;gap:7px}
+.dd{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.dn{font-size:12px;color:var(--tx2);flex:1}
+.dv{font-size:12px;font-weight:500;color:var(--tx);font-family:var(--fM)}
+.dp{font-size:10px;color:var(--tx3);margin-left:2px;font-family:var(--fM)}
+
+/* TABLE */
+.tw{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:460px}
+.tbl th{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:var(--tx3);text-align:left;padding:9px 12px;border-bottom:1px solid var(--rim);font-weight:500;font-family:var(--fM);background:var(--bg3)}
+.tbl th.r{text-align:right}
+.tbl td{font-size:12px;color:var(--tx);padding:9px 12px;border-bottom:1px solid var(--rim);transition:background .12s}
+.tbl td.r{text-align:right;font-family:var(--fM);font-weight:500}
+.tbl tbody tr:hover td{background:var(--bg3);cursor:pointer}
+.tbl tbody tr:last-child td{border-bottom:none}
+.av{width:27px;height:27px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-right:7px;vertical-align:middle;font-family:var(--fD)}
+.av.ab{background:var(--ab-bg);color:var(--ab3);border:1px solid var(--ab-bd)}
+.av.au{background:var(--au-bg);color:var(--au2);border:1px solid var(--au-bd)}
+.av.ae{background:var(--ae-bg);color:var(--ae2);border:1px solid var(--ae-bd)}
+
+/* MINI BAR */
+.mbw{display:flex;gap:2px;align-items:center}
+.mbs{height:4px;border-radius:2px;min-width:3px}
+
+/* TREND COLS */
+.tc-wrap{display:flex;align-items:flex-end;gap:7px;height:90px}
+.tcc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.tc-bar{width:100%;border-radius:3px 3px 0 0;transition:height .9s cubic-bezier(.4,0,.2,1)}
+.tcc:hover .tc-bar{opacity:.72}
+.tc-v{font-size:9px;font-weight:600;color:var(--tx2);font-family:var(--fM)}
+.tc-l{font-size:8px;color:var(--tx3);white-space:nowrap;font-family:var(--fM)}
+
+/* INSIGHTS */
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}
+.ins{background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r2);padding:13px 15px;position:relative;overflow:hidden}
+.ins::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px}
+.ins.ab::after{background:linear-gradient(180deg,var(--ab3),var(--ab))}
+.ins.au::after{background:linear-gradient(180deg,var(--au3),var(--au))}
+.ins.ae::after{background:linear-gradient(180deg,var(--ae2),var(--ae))}
+.ins-l{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:var(--tx3);font-family:var(--fM);margin-bottom:5px}
+.ins-t{font-size:12px;color:var(--tx2);line-height:1.6}
+.ins-t strong{color:var(--tx);font-weight:600}
+
+/* FILTER */
+.fb{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.f-l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);font-family:var(--fM)}
+.fb-btn{background:var(--bg3);border:1px solid var(--rim);color:var(--tx3);padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .18s;font-family:var(--fB)}
+.fb-btn:hover{background:var(--bg4);color:var(--tx2)}
+.fb-btn.on{background:var(--au-bg);color:var(--au2);border-color:var(--au-bd)}
+.f-sel{background:var(--bg3);border:1px solid var(--rim);color:var(--tx2);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--fB);outline:none}
+
+/* OP PANEL */
+.opp{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--au-bd);border-radius:var(--r3);padding:18px;margin-bottom:13px;display:none}
+.opp.on{display:block;animation:up .28s ease}
+.opp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.oav{width:46px;height:46px;border-radius:9px;background:var(--au-bg);border:2px solid var(--au-bd);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--au2);font-family:var(--fD)}
+.ocl{background:var(--bg4);border:1px solid var(--rim);color:var(--tx3);width:26px;height:26px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+.ocl:hover{color:var(--tx);background:var(--bg5)}
+.op-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.ops{background:var(--bg2);border-radius:7px;padding:11px;text-align:center;border:1px solid var(--rim)}
+.osl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx3);font-family:var(--fM);margin-bottom:4px}
+.osv{font-size:20px;font-weight:800;font-family:var(--fD)}
+
+/* DIV */
+.dv{height:1px;background:var(--rim);margin:11px 0}
+.sl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx3);font-family:var(--fM);margin-bottom:9px}
+
+/* HOY */
+.hoy-strip{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--au-bd);border-radius:var(--r3);padding:17px 21px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hoy-dt{font-family:var(--fD);font-size:22px;font-weight:800;color:var(--au2);letter-spacing:-.3px}
+.hoy-ds{font-size:10px;color:var(--tx3);font-family:var(--fM);margin-top:3px}
+
+/* TIMELINE */
+.tl{display:flex;flex-direction:column}
+.tli{display:flex;align-items:stretch;gap:0;cursor:pointer}
+.tli:hover .tl-card{background:var(--bg3);border-color:var(--rim2)}
+.tl-spine{display:flex;flex-direction:column;align-items:center;width:36px;flex-shrink:0;padding-top:13px}
+.tl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:2px solid}
+.tl-dot.imp{background:var(--ab-bg);border-color:var(--ab3)}
+.tl-dot.exp{background:var(--au-bg);border-color:var(--au2)}
+.tl-line{width:1px;background:var(--rim);flex:1;margin-top:3px}
+.tli:last-child .tl-line{display:none}
+.tl-card{flex:1;background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r2);padding:11px 15px;margin-bottom:7px;transition:all .18s}
+.tl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.tl-op{font-size:13px;font-weight:700;color:var(--tx);font-family:var(--fD)}
+.tl-meta{display:flex;gap:10px;font-size:11px;color:var(--tx3);font-family:var(--fM);flex-wrap:wrap;margin-top:3px}
+
+.hoy-empty{text-align:center;padding:44px 20px;color:var(--tx3)}
+.hoy-empty .ico{font-size:34px;margin-bottom:12px;opacity:.4}
+.hoy-empty p{font-size:13px}
+
 /* RESPONSIVE */
-@media(max-width:768px){
-  .kpi-strip,.g2,.g2b,.g3,.ins-row{grid-template-columns:1fr}
-  .mini-stats{grid-template-columns:repeat(3,1fr)}
-  #topbar{padding:0 14px}
-  #navtabs{padding:0 14px;overflow-x:auto}
-  #main{padding:14px 14px 48px}
+@media(max-width:900px){
+  .krow.k4,.krow.k5{grid-template-columns:1fr 1fr}
+  .g2,.g2r,.g2e,.g3,.ig{grid-template-columns:1fr}
+  .b-nav{display:none}
+  #mob-nav{display:flex}
+  #main{padding:14px 14px 64px}
+  .hoy-strip{flex-direction:column;align-items:flex-start}
 }
+#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(6,8,13,.96);border-top:1px solid var(--rim2);backdrop-filter:blur(20px);z-index:300;padding:8px 4px 14px}
+.mn{display:flex;justify-content:space-around}
+.mi{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:8px;color:var(--tx3);font-family:var(--fM);letter-spacing:.5px;transition:all .2s}
+.mi.on{color:var(--au2);background:var(--au-bg)}
+.mi .ico{font-size:15px;margin-bottom:1px}
 </style>
 </head>
 <body>
- 
+
 <div id="loader">
-  <div class="loader-logo">
-    <div class="logo-shield">T</div>
-    <div class="loader-name">Trans<span>Mex</span></div>
+  <div class="ld-shield">
+    <svg viewBox="0 0 64 74" fill="none">
+      <path d="M32 2L62 12V36C62 55 32 72 32 72C32 72 2 55 2 36V12L32 2Z" fill="#080c12" stroke="url(#g1)" stroke-width="1.5"/>
+      <path d="M32 10L54 18V36C54 50 32 64 32 64C32 64 10 50 10 36V18L32 10Z" fill="url(#g2)" opacity=".15"/>
+      <text x="32" y="44" text-anchor="middle" font-family="Syne,sans-serif" font-weight="800" font-size="22" fill="url(#g3)">TM</text>
+      <defs>
+        <linearGradient id="g1" x1="2" y1="2" x2="62" y2="72"><stop stop-color="#d4a020"/><stop offset="1" stop-color="#1e6ad4"/></linearGradient>
+        <linearGradient id="g2" x1="10" y1="10" x2="54" y2="64"><stop stop-color="#d4a020"/><stop offset="1" stop-color="#1e6ad4"/></linearGradient>
+        <linearGradient id="g3" x1="10" y1="28" x2="54" y2="48"><stop stop-color="#f0c040"/><stop offset="1" stop-color="#d4a020"/></linearGradient>
+      </defs>
+    </svg>
   </div>
-  <div class="loader-bar"><div class="loader-fill"></div></div>
-  <div class="loader-txt" id="loader-txt">Conectando con AppSheet...</div>
+  <div class="ld-name">Trans<b>Mex</b></div>
+  <div class="ld-bar"></div>
+  <div class="ld-msg" id="ldm">Inicializando sistema...</div>
 </div>
- 
-<div id="app" style="display:none">
- 
-  <div id="topbar">
-    <div class="tb-brand">
-      <div class="tb-shield">
-        <svg viewBox="0 0 34 40" fill="none">
-          <path d="M17 1L33 7V22C33 31 17 39 17 39C17 39 1 31 1 22V7L17 1Z" fill="#0f1e35" stroke="rgba(201,162,39,0.4)" stroke-width="1"/>
-          <path d="M17 6L28 10.5V21C28 27.5 17 33.5 17 33.5C17 33.5 6 27.5 6 21V10.5L17 6Z" fill="url(#sg)"/>
-          <text x="17" y="24" text-anchor="middle" font-family="Inter Tight" font-weight="800" font-size="14" fill="white">T</text>
-          <defs><linearGradient id="sg" x1="6" y1="6" x2="28" y2="34"><stop offset="0%" stop-color="#1e6abf"/><stop offset="100%" stop-color="#c9a227"/></linearGradient></defs>
+
+<div id="app">
+  <div id="bar">
+    <div class="b-brand">
+      <div class="b-shield">
+        <svg viewBox="0 0 64 74" fill="none">
+          <path d="M32 2L62 12V36C62 55 32 72 32 72C32 72 2 55 2 36V12L32 2Z" fill="#080c12" stroke="url(#tg1)" stroke-width="1.5"/>
+          <text x="32" y="44" text-anchor="middle" font-family="Syne,sans-serif" font-weight="800" font-size="22" fill="url(#tg2)">TM</text>
+          <defs>
+            <linearGradient id="tg1" x1="2" y1="2" x2="62" y2="72"><stop stop-color="#d4a020"/><stop offset="1" stop-color="#1e6ad4"/></linearGradient>
+            <linearGradient id="tg2" x1="10" y1="28" x2="54" y2="48"><stop stop-color="#f0c040"/><stop offset="1" stop-color="#d4a020"/></linearGradient>
+          </defs>
         </svg>
       </div>
-      <div class="tb-names">
-        <div class="tb-title">Trans<span>Mex</span></div>
-        <div class="tb-sub">Dashboard Operativo · Tráfico Local</div>
+      <div>
+        <div class="b-name">Trans<b>Mex</b></div>
+        <div class="b-sub">Dashboard Operativo · Tráfico Local</div>
       </div>
     </div>
-    <div class="tb-right">
-      <div class="last-upd">Actualizado: <span id="last-upd">—</span></div>
-      <button id="refresh-btn" onclick="refreshData()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+
+    <div class="b-nav">
+      <button class="n-tab hoy-t on" onclick="nav('hoy',this)">📋 Hoy</button>
+      <button class="n-tab" onclick="nav('general',this)">Resumen</button>
+      <button class="n-tab" onclick="nav('imp',this)">Importación</button>
+      <button class="n-tab" onclick="nav('exp',this)">Exportación</button>
+      <button class="n-tab" onclick="nav('ops',this)">Operadores</button>
+      <button class="n-tab" onclick="nav('trend',this)">Tendencia</button>
+    </div>
+
+    <div class="b-right">
+      <span class="upd" id="upd">—</span>
+      <button id="rbtn" onclick="doRefresh()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         Actualizar
       </button>
-      <div class="live-badge" onclick="refreshData()"><div class="live-dot"></div>En vivo</div>
+      <div class="live"><div class="ldot"></div>EN VIVO</div>
     </div>
   </div>
- 
-  <div id="navtabs">
-    <div class="nav-tab active" onclick="showPage('general')">Resumen General</div>
-    <div class="nav-tab" onclick="showPage('importacion')">Importación</div>
-    <div class="nav-tab" onclick="showPage('exportacion')">Exportación</div>
-    <div class="nav-tab" onclick="showPage('operadores')">Operadores</div>
-    <div class="nav-tab" onclick="showPage('tendencia')">Tendencia</div>
+
+  <div id="mob-nav">
+    <div class="mn">
+      <div class="mi on" onclick="nav('hoy',this)"><div class="ico">📋</div>HOY</div>
+      <div class="mi" onclick="nav('general',this)"><div class="ico">◎</div>RESUMEN</div>
+      <div class="mi" onclick="nav('imp',this)"><div class="ico">↓</div>IMP</div>
+      <div class="mi" onclick="nav('exp',this)"><div class="ico">↑</div>EXP</div>
+      <div class="mi" onclick="nav('ops',this)"><div class="ico">◈</div>OPS</div>
+    </div>
   </div>
- 
+
   <div id="main">
- 
+
+    <!-- HOY -->
+    <div class="pg on" id="pg-hoy">
+      <div class="hoy-strip">
+        <div>
+          <div class="hoy-dt" id="hoy-dt">—</div>
+          <div class="hoy-ds">Registros del día actual · Actualización automática</div>
+        </div>
+        <div class="fb" style="margin:0">
+          <span class="f-l">Filtrar:</span>
+          <button class="fb-btn on" onclick="hoyF('all',this)">Todos</button>
+          <button class="fb-btn" onclick="hoyF('imp',this)">Solo IMP</button>
+          <button class="fb-btn" onclick="hoyF('exp',this)">Solo EXP</button>
+        </div>
+      </div>
+      <div class="krow k4" id="hoy-kpis"></div>
+      <div class="g2">
+        <div class="card mb">
+          <div class="ch">
+            <div><div class="ct">Actividad del día</div><div class="cs" id="hoy-tl-s">—</div></div>
+            <span class="chip ae" id="hoy-chip">0 mov.</span>
+          </div>
+          <div style="padding:13px 16px;max-height:460px;overflow-y:auto">
+            <div class="tl" id="hoy-tl"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb">
+            <div class="ch"><div class="ct">Resumen del día</div></div>
+            <div style="padding:16px 18px">
+              <div style="text-align:center;padding:8px 0 14px">
+                <div style="font-family:var(--fD);font-size:44px;font-weight:800;color:var(--tx);letter-spacing:-2px" id="hoy-total">0</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx3);font-family:var(--fM);margin-top:4px">Movimientos totales</div>
+              </div>
+              <div class="dv"></div>
+              <div class="sl">Desglose IMP / EXP</div>
+              <div id="hoy-dsg"></div>
+            </div>
+          </div>
+          <div class="card mb">
+            <div class="ch"><div class="ct">Bodegas activas</div></div>
+            <div class="cb" id="hoy-bods"></div>
+          </div>
+          <div class="card">
+            <div class="ch"><div class="ct">Operadores en turno</div></div>
+            <div class="cb" id="hoy-oprs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- GENERAL -->
-    <div class="page active" id="page-general">
-      <div class="kpi-strip">
-        <div class="kpi blue"><div class="kl">Cruces importación</div><div class="kv" id="g-imp">—</div><div class="ks">Operación TRANSFER</div></div>
-        <div class="kpi gold"><div class="kl">Órdenes exportación</div><div class="kv" id="g-exp">—</div><div class="ks" id="g-exp-s">—</div></div>
-        <div class="kpi white"><div class="kl">Total movimientos</div><div class="kv" id="g-tot">—</div><div class="ks" id="g-ops-s">— operadores activos</div></div>
-        <div class="kpi green"><div class="kl">Días con registro</div><div class="kv" id="g-days">—</div><div class="ks" id="g-range">—</div></div>
+    <div class="pg" id="pg-general">
+      <div class="krow k4">
+        <div class="kpi ab"><div class="k-lbl">Cruces IMP</div><div class="k-val" id="g-imp">—</div><div class="k-sub">TRANSFER</div><div class="k-tag">↓ Importación</div></div>
+        <div class="kpi au"><div class="k-lbl">Órdenes EXP</div><div class="k-val" id="g-exp">—</div><div class="k-sub" id="g-exps">—</div><div class="k-tag">↑ Exportación</div></div>
+        <div class="kpi pl"><div class="k-lbl">Total movimientos</div><div class="k-val" id="g-tot">—</div><div class="k-sub" id="g-opss">—</div></div>
+        <div class="kpi ae"><div class="k-lbl">Días con registro</div><div class="k-val" id="g-days">—</div><div class="k-sub" id="g-rng">—</div></div>
       </div>
- 
       <div class="g2">
         <div class="card">
-          <div class="card-hdr"><div><div class="ch-title">Bodega principal — Importación</div><div class="ch-sub" id="gh-bod-sub">Top bodegas por volumen</div></div><span class="badge badge-blue" id="gh-bod-badge">—</span></div>
-          <div class="mini-stats">
-            <div class="ms"><div class="msl">Bodega #1</div><div class="msv" style="color:var(--blue2);font-size:15px" id="gm-bod1">—</div><div class="mss" id="gm-bod1s">—</div></div>
-            <div class="ms"><div class="msl">Bodega #2</div><div class="msv" style="color:var(--text2);font-size:15px" id="gm-bod2">—</div><div class="mss" id="gm-bod2s">—</div></div>
-            <div class="ms"><div class="msl">Otras bodegas</div><div class="msv" id="gm-bodN">—</div><div class="mss" id="gm-bodNs">—</div></div>
+          <div class="ch"><div><div class="ct">Bodegas — Importación</div><div class="cs" id="g-bod-s">—</div></div><span class="chip ab" id="g-bod-c">—</span></div>
+          <div class="msr c3">
+            <div class="ms"><div class="ml">#1</div><div class="mv" style="color:var(--ab3);font-size:13px" id="gm1">—</div><div class="ms2" id="gm1s">—</div></div>
+            <div class="ms"><div class="ml">#2</div><div class="mv" style="color:var(--tx2);font-size:13px" id="gm2">—</div><div class="ms2" id="gm2s">—</div></div>
+            <div class="ms"><div class="ml">Resto</div><div class="mv" id="gmN">—</div><div class="ms2" id="gmNs">—</div></div>
           </div>
-          <div class="card-body" id="g-bodega-bars"></div>
+          <div class="cb" id="g-bods"></div>
         </div>
         <div class="card">
-          <div class="card-hdr"><div class="ch-title">Tipo de carga — IMP</div></div>
-          <div class="card-body">
-            <div class="donut-wrap">
-              <canvas id="donut-tipo" width="110" height="110" role="img" aria-label="Distribución tipo de carga importación">Tipos de carga importación.</canvas>
-              <div class="donut-legend" id="donut-legend-tipo"></div>
-            </div>
-          </div>
+          <div class="ch"><div class="ct">Tipo de carga — IMP</div></div>
+          <div class="cb"><div class="dw"><canvas id="dn-g" width="108" height="108" role="img" aria-label="Tipos de carga">Tipos.</canvas><div class="dl" id="dl-g"></div></div></div>
         </div>
       </div>
- 
-      <div class="g2b">
-        <div class="card">
-          <div class="card-hdr"><div><div class="ch-title">Cliente principal — Exportación</div></div><span class="badge badge-gold" id="gh-cli-badge">—</span></div>
-          <div class="card-body" id="g-cliente-bars"></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Top operadores — combinado IMP+EXP</div></div>
-          <div class="card-body" id="g-top-ops"></div>
-        </div>
+      <div class="g2r">
+        <div class="card"><div class="ch"><div class="ct">Clientes — EXP</div><span class="chip au" id="g-cli-c">—</span></div><div class="cb" id="g-clis"></div></div>
+        <div class="card"><div class="ch"><div class="ct">Top operadores</div></div><div class="cb" id="g-tops"></div></div>
       </div>
- 
-      <div class="ins-row">
-        <div class="ins i-blue"><div class="il">Concentración IMP</div><div class="iv" id="ins-g1">—</div></div>
-        <div class="ins i-gold"><div class="il">Concentración EXP</div><div class="iv" id="ins-g2">—</div></div>
-        <div class="ins i-green"><div class="il">Tendencia operativa</div><div class="iv" id="ins-g3">—</div></div>
+      <div class="ig">
+        <div class="ins ab"><div class="ins-l">Concentración IMP</div><div class="ins-t" id="ins1">—</div></div>
+        <div class="ins au"><div class="ins-l">Concentración EXP</div><div class="ins-t" id="ins2">—</div></div>
+        <div class="ins ae"><div class="ins-l">Operatividad</div><div class="ins-t" id="ins3">—</div></div>
       </div>
     </div>
- 
-    <!-- IMPORTACION -->
-    <div class="page" id="page-importacion">
-      <div class="kpi-strip">
-        <div class="kpi blue"><div class="kl">Total cruces</div><div class="kv" id="i-tot">—</div><div class="ks">Operación TRANSFER</div></div>
-        <div class="kpi blue"><div class="kl">CJ Cargada</div><div class="kv" id="i-cjc">—</div><div class="ks" id="i-cjc-s">—</div></div>
-        <div class="kpi white"><div class="kl">PLT Cargada</div><div class="kv" id="i-pltc">—</div><div class="ks" id="i-pltc-s">—</div></div>
-        <div class="kpi white"><div class="kl">Vacías (CJ+PLT)</div><div class="kv" id="i-vac">—</div><div class="ks" id="i-vac-s">—</div></div>
+
+    <!-- IMP -->
+    <div class="pg" id="pg-imp">
+      <div class="krow k4">
+        <div class="kpi ab"><div class="k-lbl">Total cruces</div><div class="k-val" id="i-tot">—</div></div>
+        <div class="kpi ab"><div class="k-lbl">CJ Cargada</div><div class="k-val" id="i-cjc">—</div><div class="k-sub" id="i-cjcs">—</div></div>
+        <div class="kpi pl"><div class="k-lbl">PLT Cargada</div><div class="k-val" id="i-plt">—</div><div class="k-sub" id="i-plts">—</div></div>
+        <div class="kpi pl"><div class="k-lbl">Vacías</div><div class="k-val" id="i-vac">—</div><div class="k-sub" id="i-vacs">—</div></div>
       </div>
       <div class="g2">
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Bodegas por volumen</div><div class="ch-sub">Todas las bodegas con registro</div></div>
-          <div class="card-body" id="i-bodega-bars"></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Distribución por tipo</div></div>
-          <div class="card-body">
-            <div class="donut-wrap">
-              <canvas id="donut-imp" width="110" height="110" role="img" aria-label="Tipos de carga importación">Tipos importación.</canvas>
-              <div class="donut-legend" id="donut-legend-imp"></div>
-            </div>
-          </div>
-        </div>
+        <div class="card"><div class="ch"><div class="ct">Bodegas por volumen</div></div><div class="cb" id="i-bods"></div></div>
+        <div class="card"><div class="ch"><div class="ct">Tipos de carga</div></div><div class="cb"><div class="dw"><canvas id="dn-i" width="108" height="108" role="img" aria-label="Tipos IMP">Tipos IMP.</canvas><div class="dl" id="dl-i"></div></div></div></div>
       </div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-hdr"><div class="ch-title">Cruces por día</div><div class="ch-sub" id="i-trend-sub">—</div></div>
-        <div class="card-body"><div id="i-trend-bars" class="trend-cols"></div><div id="i-trend-labels" style="display:flex;gap:6px;padding:6px 4px 0;font-size:9px;color:var(--text3)"></div></div>
+      <div class="card mb">
+        <div class="ch"><div class="ct">Cruces por día</div><div class="cs" id="i-ts">—</div></div>
+        <div class="cb"><div class="tc-wrap" id="i-tc"></div></div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="ch-title">Operadores — Importación</div></div>
-        <div class="ops-wrap"><table class="ops-tbl"><thead><tr><th>Operador</th><th class="r">Cruces</th><th class="r">%</th><th>Bodegas</th></tr></thead><tbody id="i-ops-tbody"></tbody></table></div>
+        <div class="ch"><div class="ct">Operadores — IMP</div></div>
+        <div class="tw"><table class="tbl"><thead><tr><th>Operador</th><th class="r">Cruces</th><th class="r">%</th><th>Bodegas</th></tr></thead><tbody id="i-otb"></tbody></table></div>
       </div>
     </div>
- 
-    <!-- EXPORTACION -->
-    <div class="page" id="page-exportacion">
-      <div class="kpi-strip">
-        <div class="kpi gold"><div class="kl">Total órdenes</div><div class="kv" id="e-tot">—</div><div class="ks">Exportación registrada</div></div>
-        <div class="kpi gold"><div class="kl">Cliente principal</div><div class="kv" style="font-size:16px;margin-top:4px" id="e-cli1">—</div><div class="ks" id="e-cli1-s">—</div></div>
-        <div class="kpi white"><div class="kl">Destino principal</div><div class="kv" style="font-size:16px;margin-top:4px" id="e-dest1">—</div><div class="ks" id="e-dest1-s">—</div></div>
-        <div class="kpi white"><div class="kl">Otros clientes</div><div class="kv" id="e-otros">—</div><div class="ks" id="e-otros-s">—</div></div>
+
+    <!-- EXP -->
+    <div class="pg" id="pg-exp">
+      <div class="krow k4">
+        <div class="kpi au"><div class="k-lbl">Total órdenes</div><div class="k-val" id="e-tot">—</div></div>
+        <div class="kpi au"><div class="k-lbl">Cliente principal</div><div class="k-val" style="font-size:17px;margin-top:4px" id="e-c1">—</div><div class="k-sub" id="e-c1s">—</div></div>
+        <div class="kpi pl"><div class="k-lbl">Destino principal</div><div class="k-val" style="font-size:17px;margin-top:4px" id="e-d1">—</div><div class="k-sub" id="e-d1s">—</div></div>
+        <div class="kpi pl"><div class="k-lbl">Otros clientes</div><div class="k-val" id="e-ot">—</div><div class="k-sub" id="e-ots">—</div></div>
       </div>
-      <div class="g2">
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Clientes por volumen</div></div>
-          <div class="card-body" id="e-cliente-bars"></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Destinos</div></div>
-          <div class="card-body" id="e-destino-bars"></div>
-        </div>
+      <div class="g2e">
+        <div class="card"><div class="ch"><div class="ct">Clientes</div></div><div class="cb" id="e-cbs"></div></div>
+        <div class="card"><div class="ch"><div class="ct">Destinos</div></div><div class="cb" id="e-dbs"></div></div>
       </div>
       <div class="card">
-        <div class="card-hdr"><div class="ch-title">Operadores — Exportación</div></div>
-        <div class="ops-wrap"><table class="ops-tbl"><thead><tr><th>Operador</th><th class="r">Órdenes</th><th class="r">%</th><th>Clientes</th></tr></thead><tbody id="e-ops-tbody"></tbody></table></div>
+        <div class="ch"><div class="ct">Operadores — EXP</div></div>
+        <div class="tw"><table class="tbl"><thead><tr><th>Operador</th><th class="r">Órdenes</th><th class="r">%</th><th>Clientes</th></tr></thead><tbody id="e-otb"></tbody></table></div>
       </div>
     </div>
- 
-    <!-- OPERADORES -->
-    <div class="page" id="page-operadores">
-      <div class="filter-bar">
-        <span class="filter-label">Filtrar por tipo:</span>
-        <button class="filter-btn active" onclick="filterOps('all',this)">Todos</button>
-        <button class="filter-btn" onclick="filterOps('both',this)">IMP + EXP</button>
-        <button class="filter-btn" onclick="filterOps('imp',this)">Solo IMP</button>
-        <button class="filter-btn" onclick="filterOps('exp',this)">Solo EXP</button>
-        <select class="filter-sel" id="ops-sort" onchange="renderOpsPage()">
-          <option value="total">Ordenar: Total</option>
-          <option value="imp">Ordenar: IMP</option>
-          <option value="exp">Ordenar: EXP</option>
-          <option value="name">Ordenar: Nombre</option>
+
+    <!-- OPS -->
+    <div class="pg" id="pg-ops">
+      <div class="fb">
+        <span class="f-l">Tipo:</span>
+        <button class="fb-btn on" onclick="opsF('all',this)">Todos</button>
+        <button class="fb-btn" onclick="opsF('both',this)">IMP+EXP</button>
+        <button class="fb-btn" onclick="opsF('imp',this)">Solo IMP</button>
+        <button class="fb-btn" onclick="opsF('exp',this)">Solo EXP</button>
+        <select class="f-sel" id="ops-sort" onchange="renderOps()">
+          <option value="tot">↓ Total</option>
+          <option value="imp">↓ IMP</option>
+          <option value="exp">↓ EXP</option>
+          <option value="name">A→Z</option>
         </select>
       </div>
- 
-      <div class="op-detail-card" id="op-detail">
-        <div class="op-detail-hdr">
-          <div class="op-detail-name">
-            <div class="op-avatar-lg" id="op-det-av">—</div>
-            <div><div style="font-size:16px;font-weight:700;font-family:'Inter Tight',sans-serif" id="op-det-name">—</div><div style="font-size:11px;color:var(--text3);margin-top:2px" id="op-det-sub">—</div></div>
-          </div>
-          <button class="op-detail-close" onclick="closeOpDetail()">✕</button>
-        </div>
-        <div class="op-stat-row">
-          <div class="op-stat"><div class="osl">Cruces IMP</div><div class="osv" style="color:var(--blue2)" id="op-det-imp">—</div></div>
-          <div class="op-stat"><div class="osl">Órdenes EXP</div><div class="osv" style="color:var(--gold2)" id="op-det-exp">—</div></div>
-          <div class="op-stat"><div class="osl">Total mov.</div><div class="osv" id="op-det-tot">—</div></div>
-          <div class="op-stat"><div class="osl">Tipo</div><div class="osv" style="font-size:13px" id="op-det-tipo">—</div></div>
-        </div>
-        <div style="margin-top:14px">
-          <div class="sec-lbl">Bodegas atendidas (IMP)</div>
-          <div id="op-det-bodegas" style="font-size:12px;color:var(--text2)"></div>
-        </div>
-      </div>
- 
-      <div class="card">
-        <div class="card-hdr">
-          <div><div class="ch-title">Ranking operadores</div><div class="ch-sub" id="ops-count-lbl">—</div></div>
-          <div style="display:flex;gap:10px;align-items:center">
-            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--blue2);display:inline-block"></span>IMP</span>
-            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:8px;height:8px;border-radius:2px;background:var(--gold2);display:inline-block"></span>EXP</span>
-          </div>
-        </div>
-        <div class="ops-wrap">
-          <table class="ops-tbl">
-            <thead><tr><th>#</th><th>Operador</th><th class="r">IMP</th><th class="r">EXP</th><th class="r">Total</th><th>Tipo</th><th>Actividad</th></tr></thead>
-            <tbody id="ops-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
- 
-    <!-- TENDENCIA -->
-    <div class="page" id="page-tendencia">
-      <div class="filter-bar">
-        <span class="filter-label">Vista:</span>
-        <button class="filter-btn active" onclick="filterTrend('imp',this)">Importación</button>
-        <button class="filter-btn" onclick="filterTrend('exp',this)">Exportación</button>
-        <button class="filter-btn" onclick="filterTrend('all',this)">Combinado</button>
-      </div>
-      <div class="kpi-strip" id="trend-kpis"></div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="card-hdr"><div class="ch-title" id="trend-chart-title">Movimientos por día</div><div class="ch-sub" id="trend-chart-sub">—</div></div>
-        <div style="padding:16px 18px">
-          <div style="position:relative;height:220px"><canvas id="trend-chart" role="img" aria-label="Tendencia diaria">Tendencia diaria de movimientos.</canvas></div>
-        </div>
-      </div>
-      <div class="g2">
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Distribución por tipo — IMP</div></div>
-          <div class="card-body" id="t-tipo-bars"></div>
-        </div>
-        <div class="card">
-          <div class="card-hdr"><div class="ch-title">Día más activo</div></div>
-          <div class="card-body">
-            <div style="text-align:center;padding:12px 0">
-              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Fecha pico</div>
-              <div style="font-size:32px;font-family:'Inter Tight',sans-serif;font-weight:700;color:var(--gold2)" id="t-peak-day">—</div>
-              <div style="font-size:13px;color:var(--text2);margin-top:4px" id="t-peak-val">—</div>
+      <div class="opp" id="opp">
+        <div class="opp-h">
+          <div style="display:flex;align-items:center;gap:13px">
+            <div class="oav" id="od-av">—</div>
+            <div>
+              <div style="font-family:var(--fD);font-size:17px;font-weight:800;color:var(--tx)" id="od-n">—</div>
+              <div style="font-size:10px;color:var(--tx3);font-family:var(--fM);margin-top:2px" id="od-s">—</div>
             </div>
-            <hr class="div-line">
-            <div id="t-day-breakdown"></div>
+          </div>
+          <button class="ocl" onclick="closeOp()">✕</button>
+        </div>
+        <div class="op-stats">
+          <div class="ops"><div class="osl">IMP</div><div class="osv" style="color:var(--ab3)" id="od-i">—</div></div>
+          <div class="ops"><div class="osl">EXP</div><div class="osv" style="color:var(--au2)" id="od-e">—</div></div>
+          <div class="ops"><div class="osl">Total</div><div class="osv" id="od-t">—</div></div>
+          <div class="ops"><div class="osl">Tipo</div><div class="osv" style="font-size:11px;margin-top:5px" id="od-tp">—</div></div>
+        </div>
+        <div style="margin-top:12px"><div class="sl">Bodegas IMP</div><div style="font-size:12px;color:var(--tx2)" id="od-b">—</div></div>
+      </div>
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">Ranking operadores</div><div class="cs" id="ops-lbl">—</div></div>
+          <div style="display:flex;gap:9px">
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tx2)"><span style="width:7px;height:7px;border-radius:2px;background:var(--ab2);display:inline-block"></span>IMP</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tx2)"><span style="width:7px;height:7px;border-radius:2px;background:var(--au2);display:inline-block"></span>EXP</span>
+          </div>
+        </div>
+        <div class="tw"><table class="tbl"><thead><tr><th>#</th><th>Operador</th><th class="r">IMP</th><th class="r">EXP</th><th class="r">Total</th><th>Tipo</th><th>Actividad</th></tr></thead><tbody id="ops-tb"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- TREND -->
+    <div class="pg" id="pg-trend">
+      <div class="fb">
+        <span class="f-l">Vista:</span>
+        <button class="fb-btn on" onclick="trendF('imp',this)">Importación</button>
+        <button class="fb-btn" onclick="trendF('exp',this)">Exportación</button>
+        <button class="fb-btn" onclick="trendF('all',this)">Combinado</button>
+      </div>
+      <div class="krow k4" id="t-kpis"></div>
+      <div class="card mb">
+        <div class="ch"><div class="ct" id="t-ct">Movimientos</div><div class="cs" id="t-cs">—</div></div>
+        <div style="padding:14px 18px;position:relative;height:230px"><canvas id="t-chart" role="img" aria-label="Tendencia">Tendencia.</canvas></div>
+      </div>
+      <div class="g2e">
+        <div class="card"><div class="ch"><div class="ct">Tipos de carga — IMP</div></div><div class="cb" id="t-tipos"></div></div>
+        <div class="card">
+          <div class="ch"><div class="ct">Día pico</div></div>
+          <div style="text-align:center;padding:20px 18px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--tx3);font-family:var(--fM);margin-bottom:8px">Fecha más activa</div>
+            <div style="font-family:var(--fD);font-size:28px;font-weight:800;color:var(--au2)" id="t-pk">—</div>
+            <div style="font-size:11px;color:var(--tx3);font-family:var(--fM);margin-top:6px" id="t-pkv">—</div>
+            <div class="dv"></div>
+            <div id="t-pkb"></div>
           </div>
         </div>
       </div>
     </div>
- 
+
   </div>
 </div>
- 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const APP_ID  = 'c03c2f96-a0d0-4bcf-a0f7-70ca22112546';
-const API_KEY = 'V2-MIjZN-l76O8-Zpwku-sH3nr-OBju5-aGe55-5tI7x-zk0YB';
-const BASE    = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables`;
- 
-let IMP = [], EXP = [];
-let currentOpsFilter = 'all';
-let currentTrendView = 'imp';
-let trendChartInst = null;
- 
-async function fetchTable(name) {
-  document.getElementById('loader-txt').textContent = `Cargando ${name}...`;
-  const r = await fetch(`${BASE}/${encodeURIComponent(name)}/Action`, {
+const AID='c03c2f96-a0d0-4bcf-a0f7-70ca22112546';
+const AK='V2-MIjZN-l76O8-Zpwku-sH3nr-OBju5-aGe55-5tI7x-zk0YB';
+const BASE=`https://api.appsheet.com/api/v2/apps/${AID}/tables`;
+
+let IMP=[],EXP=[];
+let opsFV='all',trendV='imp',hoyFV='all';
+let tChart=null;
+
+const $=id=>document.getElementById(id);
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+
+function cnt(arr,key){const m={};arr.forEach(r=>{const v=(r[key]||'').toString().trim().toUpperCase();if(v)m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function pct(v,t){return t?Math.round(v/t*100)+'%':'0%'}
+function pN(v,t){return t?Math.round(v/t*100):0}
+
+function today(){return new Date().toISOString().substring(0,10)}
+function todayLbl(){return new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function fmtD(d){try{return new Date(d+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}catch{return d}}
+function fmtDF(d){try{return new Date(d+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
+
+function getDate(r,isExp){
+  const f=(r.FECHA||'').toString().trim();
+  if(f.length>=10)return f.substring(0,10);
+  if(isExp){const l=(r.LAR||'').toString().trim();if(l.length>=10)return l.substring(0,10);}
+  return '';
+}
+
+async function fetchT(name){
+  $('ldm').textContent=`Cargando ${name}...`;
+  const r=await fetch(`${BASE}/${encodeURIComponent(name)}/Action`,{
     method:'POST',
-    headers:{'applicationAccessKey':API_KEY,'Content-Type':'application/json'},
+    headers:{'applicationAccessKey':AK,'Content-Type':'application/json'},
     body:JSON.stringify({Action:'Find',Properties:{},Rows:[]})
   });
-  if(!r.ok) throw new Error(`HTTP ${r.status} — tabla ${name}`);
-  const j = await r.json();
-  return Array.isArray(j) ? j : (j.Rows||j.rows||[]);
+  if(!r.ok)throw new Error(`HTTP ${r.status} · ${name}`);
+  const j=await r.json();
+  return Array.isArray(j)?j:(j.Rows||j.rows||[]);
 }
- 
-function count(arr, key) {
-  const m={};
-  arr.forEach(r=>{const v=(r[key]||'').toString().trim().toUpperCase();if(v)m[v]=(m[v]||0)+1});
-  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+
+function nav(page,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.n-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.mi').forEach(t=>t.classList.remove('on'));
+  $('pg-'+page).classList.add('on');
+  if(el){el.classList.add('on')}
 }
- 
-function pct(v,t){return t?Math.round((v/t)*100)+'%':'0%'}
-function pctN(v,t){return t?Math.round((v/t)*100):0}
- 
-function barRow(label,val,maxVal,total,color,labelW='w140'){
-  const w=maxVal?Math.round((val/maxVal)*100):0;
-  return `<div class="br"><div class="bl ${labelW}" title="${label}">${label}</div><div class="bt"><div class="bf" style="width:${w}%;background:${color}"></div></div><div class="bn">${val}</div><div class="bp">${pct(val,total)}</div></div>`;
-}
- 
-function renderBars(id,entries,total,color,topN=10,labelW='w140'){
+
+function bars(id,entries,tot,color,topN=10,lw='w120'){
   const top=entries.slice(0,topN);
-  const maxV=top[0]?top[0][1]:1;
-  let h=top.map(([k,v])=>barRow(k,v,maxV,total,color,labelW)).join('');
+  const mx=top[0]?top[0][1]:1;
+  let h=top.map(([k,v])=>`<div class="br"><div class="bl ${lw}" title="${k}">${k}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${color}"></div></div><div class="bn">${v}</div><div class="bp">${pct(v,tot)}</div></div>`).join('');
   const rest=entries.length-topN;
-  if(rest>0)h+=`<div class="more-note">+${rest} bodegas/clientes adicionales con 1–2 registros</div>`;
-  document.getElementById(id).innerHTML=h;
+  if(rest>0)h+=`<div class="more">+${rest} más</div>`;
+  $(id).innerHTML=h;
 }
- 
-function donut(canvasId,legendId,entries,total,colors){
-  const ctx=document.getElementById(canvasId).getContext('2d');
-  const labels=entries.map(([k])=>k);
-  const data=entries.map(([,v])=>v);
+
+function donut(cid,lid,entries,tot,colors){
+  const ctx=$(cid).getContext('2d');
   new Chart(ctx,{
     type:'doughnut',
-    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
-    options:{responsive:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}}}}
+    data:{labels:entries.map(([k])=>k),datasets:[{data:entries.map(([,v])=>v),backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} (${pct(c.parsed,tot)})`}}}}
   });
-  const leg=document.getElementById(legendId);
-  leg.innerHTML=entries.map(([k,v],i)=>`<div class="dl-row"><div class="dl-dot" style="background:${colors[i]}"></div><div class="dl-name">${k}</div><div class="dl-val">${v}</div><div class="dl-pct">${pct(v,total)}</div></div>`).join('');
+  $(lid).innerHTML=entries.map(([k,v],i)=>`<div class="dr"><div class="dd" style="background:${colors[i]}"></div><div class="dn">${k}</div><div class="dv">${v}</div><div class="dp">${pct(v,tot)}</div></div>`).join('');
 }
- 
-function fmtDate(d){
-  try{const dt=new Date(d+'T12:00:00');return isNaN(dt)?d:dt.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}catch{return d}
-}
- 
-function showPage(name){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  event.target.classList.add('active');
-}
- 
-function filterOps(type,btn){
-  currentOpsFilter=type;
-  document.querySelectorAll('#page-operadores .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderOpsPage();
-}
- 
-function filterTrend(type,btn){
-  currentTrendView=type;
-  document.querySelectorAll('#page-tendencia .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTrendPage();
-}
- 
-function closeOpDetail(){
-  document.getElementById('op-detail').classList.remove('visible');
-}
- 
-function openOpDetail(op){
-  const d=document.getElementById('op-detail');
-  document.getElementById('op-det-av').textContent=op.n.substring(0,2);
-  document.getElementById('op-det-name').textContent=op.n;
-  let tipo=op.imp>0&&op.exp>0?'IMP + EXP':op.imp>0?'Solo IMP':'Solo EXP';
-  document.getElementById('op-det-sub').textContent=tipo+' · '+op.tot+' movimientos totales';
-  document.getElementById('op-det-imp').textContent=op.imp;
-  document.getElementById('op-det-exp').textContent=op.exp;
-  document.getElementById('op-det-tot').textContent=op.tot;
-  document.getElementById('op-det-tipo').textContent=tipo;
-  const bodegas=IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===op.n).map(r=>(r.BODEGA||'').trim()).filter(Boolean);
-  const ubods=[...new Set(bodegas)];
-  document.getElementById('op-det-bodegas').textContent=ubods.length?ubods.join(', '):'Sin registro';
-  d.classList.add('visible');
-  d.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
- 
-function renderOpsPage(){
-  const impC={},expC={};
-  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)impC[k]=(impC[k]||0)+1});
-  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)expC[k]=(expC[k]||0)+1});
-  let ops=[...new Set([...Object.keys(impC),...Object.keys(expC)])].map(k=>({n:k,imp:impC[k]||0,exp:expC[k]||0,tot:(impC[k]||0)+(expC[k]||0)}));
- 
-  if(currentOpsFilter==='both')ops=ops.filter(o=>o.imp>0&&o.exp>0);
-  else if(currentOpsFilter==='imp')ops=ops.filter(o=>o.imp>0&&o.exp===0);
-  else if(currentOpsFilter==='exp')ops=ops.filter(o=>o.exp>0&&o.imp===0);
- 
-  const sortBy=document.getElementById('ops-sort').value;
-  if(sortBy==='imp')ops.sort((a,b)=>b.imp-a.imp);
-  else if(sortBy==='exp')ops.sort((a,b)=>b.exp-a.exp);
-  else if(sortBy==='name')ops.sort((a,b)=>a.n.localeCompare(b.n));
-  else ops.sort((a,b)=>b.tot-a.tot);
- 
-  document.getElementById('ops-count-lbl').textContent=ops.length+' operadores · haz clic para ver detalle';
-  const maxT=ops[0]?.tot||1;
-  let tbody='';
-  ops.forEach((o,i)=>{
-    let cls,avCls;
-    if(o.imp>0&&o.exp>0){cls='badge-gold';avCls='av-g';}
-    else if(o.imp>0){cls='badge-blue';avCls='av-b';}
-    else{cls='badge-green';avCls='av-gr';}
-    const tipo=o.imp>0&&o.exp>0?'IMP+EXP':o.imp>0?'Solo IMP':'Solo EXP';
-    const wI=Math.round((o.imp/maxT)*80);
-    const wE=Math.round((o.exp/maxT)*80);
-    tbody+=`<tr onclick="openOpDetail(${JSON.stringify(o).replace(/"/g,'&quot;')})">
-      <td style="color:var(--text3);font-size:11px">${i+1}</td>
-      <td><span class="av ${avCls}">${o.n.substring(0,2)}</span>${o.n}</td>
-      <td class="r" style="color:var(--blue2)">${o.imp}</td>
-      <td class="r" style="color:var(--gold2)">${o.exp}</td>
-      <td class="r">${o.tot}</td>
-      <td><span class="badge ${cls}">${tipo}</span></td>
-      <td><div class="mini-bar-wrap">${o.imp?`<div class="mini-seg" style="width:${wI}px;background:var(--blue2)"></div>`:''}${o.exp?`<div class="mini-seg" style="width:${wE}px;background:var(--gold2)"></div>`:''}</div></td>
-    </tr>`;
-  });
-  document.getElementById('ops-tbody').innerHTML=tbody||'<tr><td colspan="7" class="empty">Sin operadores en este filtro</td></tr>';
-}
- 
-function renderTrendPage(){
-  const impByDay={},expByDay={};
-  IMP.forEach(r=>{const d=(r.FECHA||'').toString().substring(0,10);if(d)impByDay[d]=(impByDay[d]||0)+1});
-  EXP.forEach(r=>{const d=(r.FECHA||r.LAR||'').toString().substring(0,10);if(d)expByDay[d]=(expByDay[d]||0)+1});
-  const allDays=[...new Set([...Object.keys(impByDay),...Object.keys(expByDay)])].sort();
- 
-  const labels=allDays.map(d=>fmtDate(d));
-  let dataMain=[], dataSecond=[], colorMain, colorSecond, titleStr;
- 
-  if(currentTrendView==='imp'){
-    dataMain=allDays.map(d=>impByDay[d]||0);
-    colorMain='#2880e0'; titleStr='Cruces por día — Importación';
-    document.getElementById('trend-chart-sub').textContent='Solo registros IMP';
-  } else if(currentTrendView==='exp'){
-    dataMain=allDays.map(d=>expByDay[d]||0);
-    colorMain='#c9a227'; titleStr='Órdenes por día — Exportación';
-    document.getElementById('trend-chart-sub').textContent='Solo registros EXP';
-  } else {
-    dataMain=allDays.map(d=>impByDay[d]||0);
-    dataSecond=allDays.map(d=>expByDay[d]||0);
-    colorMain='#2880e0'; colorSecond='#c9a227'; titleStr='Movimientos por día — IMP + EXP';
-    document.getElementById('trend-chart-sub').textContent='IMP en azul · EXP en dorado';
+
+/* HOY */
+function renderHoy(){
+  const hoy=today();
+  set('hoy-dt',todayLbl());
+  const impH=IMP.filter(r=>getDate(r,false)===hoy);
+  const expH=EXP.filter(r=>getDate(r,true)===hoy);
+  let items=[...impH.map(r=>({...r,_t:'IMP'})),...expH.map(r=>({...r,_t:'EXP'}))];
+  let filtered=items;
+  if(hoyFV==='imp')filtered=items.filter(i=>i._t==='IMP');
+  if(hoyFV==='exp')filtered=items.filter(i=>i._t==='EXP');
+  const tI=impH.length,tE=expH.length,tT=tI+tE;
+  $('hoy-kpis').innerHTML=`
+    <div class="kpi ae"><div class="k-lbl">Total hoy</div><div class="k-val">${tT}</div><div class="k-sub">IMP + EXP</div><div class="k-tag">◉ Hoy</div></div>
+    <div class="kpi ab"><div class="k-lbl">Cruces IMP</div><div class="k-val">${tI}</div><div class="k-sub">${pct(tI,tT||1)} del total</div></div>
+    <div class="kpi au"><div class="k-lbl">Órdenes EXP</div><div class="k-val">${tE}</div><div class="k-sub">${pct(tE,tT||1)} del total</div></div>
+    <div class="kpi pl"><div class="k-lbl">Operadores</div><div class="k-val">${new Set([...impH.map(r=>(r.OPERADOR||'').trim().toUpperCase()),...expH.map(r=>(r.OPERADOR||'').trim().toUpperCase())].filter(Boolean)).size}</div><div class="k-sub">En turno hoy</div></div>`;
+  set('hoy-total',filtered.length);
+  set('hoy-chip',filtered.length+' mov.');
+  set('hoy-tl-s',`${filtered.length} registros · ${hoy}`);
+  const dI=hoyFV==='exp'?0:tI,dE=hoyFV==='imp'?0:tE,dT=dI+dE||1;
+  $('hoy-dsg').innerHTML=`
+    <div class="br"><div class="bl w90">Importación</div><div class="bt"><div class="bf" style="width:${pN(dI,dT)}%;background:var(--ab2)"></div></div><div class="bn">${dI}</div></div>
+    <div class="br"><div class="bl w90">Exportación</div><div class="bt"><div class="bf" style="width:${pN(dE,dT)}%;background:var(--au2)"></div></div><div class="bn">${dE}</div></div>`;
+  const bodsH=cnt(filtered.filter(i=>i._t==='IMP'),'BODEGA');
+  $('hoy-bods').innerHTML=bodsH.length?bodsH.slice(0,6).map(([k,v])=>`<div class="br"><div class="bl w100">${k}</div><div class="bt"><div class="bf" style="width:${bodsH[0]?Math.round(v/bodsH[0][1]*100):0}%;background:var(--ab2)"></div></div><div class="bn">${v}</div></div>`).join(''):`<div class="hoy-empty"><div class="ico">📦</div><p>Sin bodegas IMP hoy</p></div>`;
+  const opsH={};
+  filtered.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)opsH[k]=(opsH[k]||0)+1});
+  const opArr=Object.entries(opsH).sort((a,b)=>b[1]-a[1]);
+  const mx=opArr[0]?opArr[0][1]:1;
+  $('hoy-oprs').innerHTML=opArr.length?opArr.map(([k,v])=>`<div class="br"><div class="bl w100">${k}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:var(--ae)"></div></div><div class="bn">${v}</div></div>`).join(''):`<div class="hoy-empty"><p>Sin operadores hoy</p></div>`;
+  if(!filtered.length){
+    $('hoy-tl').innerHTML=`<div class="hoy-empty"><div class="ico">📋</div><p>No hay movimientos para hoy<br><span style="font-size:10px;font-family:var(--fM);color:var(--tx3)">${hoy}</span></p></div>`;
+    return;
   }
-  document.getElementById('trend-chart-title').textContent=titleStr;
- 
-  const datasets=[{label:'IMP',data:dataMain,backgroundColor:colorMain+'33',borderColor:colorMain,borderWidth:2,pointBackgroundColor:colorMain,pointRadius:4,tension:0.3,fill:true}];
-  if(dataSecond.length&&currentTrendView==='all') datasets.push({label:'EXP',data:dataSecond,backgroundColor:colorSecond+'33',borderColor:colorSecond,borderWidth:2,pointBackgroundColor:colorSecond,pointRadius:4,tension:0.3,fill:true});
- 
-  if(trendChartInst) trendChartInst.destroy();
-  trendChartInst=new Chart(document.getElementById('trend-chart').getContext('2d'),{
-    type:'line',data:{labels,datasets},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:currentTrendView==='all',labels:{color:'#8a97b0',font:{size:11}}}},scales:{x:{ticks:{color:'#4a5570',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4a5570',font:{size:10},stepSize:1},grid:{color:'rgba(255,255,255,0.06)'}}}}
-  });
- 
-  const impTypes=count(IMP,'TIPO');
-  const impTot=IMP.length;
-  let tBars='';
-  const maxV2=impTypes[0]?impTypes[0][1]:1;
-  impTypes.forEach(([k,v])=>tBars+=barRow(k,v,maxV2,impTot,'#2880e0','w110'));
-  document.getElementById('t-tipo-bars').innerHTML=tBars;
- 
-  const peakDay=allDays.reduce((best,d)=>{const v=(impByDay[d]||0)+(expByDay[d]||0);return v>(best.v||0)?{d,v}:best},{});
-  document.getElementById('t-peak-day').textContent=fmtDate(peakDay.d)||'—';
-  document.getElementById('t-peak-val').textContent=(peakDay.v||0)+' movimientos totales';
-  document.getElementById('t-day-breakdown').innerHTML=peakDay.d?`<div class="br"><div class="bl w90">IMP ese día</div><div class="bt"><div class="bf" style="width:${pctN(impByDay[peakDay.d]||0,peakDay.v)}%;background:var(--blue2)"></div></div><div class="bn">${impByDay[peakDay.d]||0}</div></div><div class="br"><div class="bl w90">EXP ese día</div><div class="bt"><div class="bf" style="width:${pctN(expByDay[peakDay.d]||0,peakDay.v)}%;background:var(--gold2)"></div></div><div class="bn">${expByDay[peakDay.d]||0}</div></div>`:'';
- 
-  const totI=IMP.length,totE=EXP.length;
-  const maxDay=Math.max(...allDays.map(d=>(impByDay[d]||0)+(expByDay[d]||0)),1);
-  const avgI=allDays.length?Math.round(totI/allDays.length):0;
-  const avgE=allDays.length?Math.round(totE/allDays.length):0;
-  document.getElementById('trend-kpis').innerHTML=`
-    <div class="kpi blue"><div class="kl">Promedio IMP/día</div><div class="kv">${avgI}</div><div class="ks">cruces por jornada</div></div>
-    <div class="kpi gold"><div class="kl">Promedio EXP/día</div><div class="kv">${avgE}</div><div class="ks">órdenes por jornada</div></div>
-    <div class="kpi white"><div class="kl">Días con datos</div><div class="kv">${allDays.length}</div><div class="ks">${allDays.length?fmtDate(allDays[0])+' → '+fmtDate(allDays[allDays.length-1]):'—'}</div></div>
-    <div class="kpi green"><div class="kl">Pico máximo</div><div class="kv">${peakDay.v||0}</div><div class="ks">${fmtDate(peakDay.d)||'—'}</div></div>`;
+  $('hoy-tl').innerHTML=filtered.map(r=>{
+    const isI=r._t==='IMP';
+    const op=(r.OPERADOR||'—').trim();
+    const extras=isI?[r.BODEGA&&`📦 ${r.BODEGA}`,r.TIPO&&`🏷 ${r.TIPO}`,r.TRACTOR&&`🚛 ${r.TRACTOR}`,r.CAJA&&`📫 ${r.CAJA}`].filter(Boolean):[r.CLIENTE&&`🏢 ${r.CLIENTE}`,r.DESTINO&&`📍 ${r.DESTINO}`,r.TIPO&&`🏷 ${r.TIPO}`].filter(Boolean);
+    return `<div class="tli"><div class="tl-spine"><div class="tl-dot ${isI?'imp':'exp'}"></div><div class="tl-line"></div></div><div class="tl-card"><div class="tl-top"><div class="tl-op">${op}</div><span class="chip ${isI?'ab':'au'}">${isI?'IMP':'EXP'}</span></div><div class="tl-meta">${extras.map(e=>`<span>${e}</span>`).join('')}</div></div></div>`;
+  }).join('');
 }
- 
-function renderAll(){
-  const totI=IMP.length, totE=EXP.length, tot=totI+totE;
-  const impC={},expC={};
-  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)impC[k]=(impC[k]||0)+1});
-  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)expC[k]=(expC[k]||0)+1});
-  const allOpsKeys=[...new Set([...Object.keys(impC),...Object.keys(expC)])];
-  const opsSorted=allOpsKeys.map(k=>({n:k,imp:impC[k]||0,exp:expC[k]||0,tot:(impC[k]||0)+(expC[k]||0)})).sort((a,b)=>b.tot-a.tot);
-  const bodegas=count(IMP,'BODEGA');
-  const tipos=count(IMP,'TIPO');
-  const clientes=count(EXP,'CLIENTE');	
-  const destinos=count(EXP,'DESTINO');
-  const impByDay={};
-  IMP.forEach(r=>{const d=(r.FECHA||'').toString().substring(0,10);if(d)impByDay[d]=(impByDay[d]||0)+1});
-  const days=Object.keys(impByDay).sort();
- 
-  // --- GENERAL PAGE ---
-  document.getElementById('g-imp').textContent=totI;
-  document.getElementById('g-exp').textContent=totE;
-  document.getElementById('g-tot').textContent=tot;
-  document.getElementById('g-days').textContent=days.length;
-  document.getElementById('g-exp-s').textContent='Destinos: '+(destinos.slice(0,2).map(([k])=>k).join(', ')||'—');
-  document.getElementById('g-ops-s').textContent=allOpsKeys.length+' operadores activos';
-  document.getElementById('g-range').textContent=days.length?fmtDate(days[0])+' → '+fmtDate(days[days.length-1]):'—';
-  if(bodegas[0]){
-    document.getElementById('gh-bod-badge').textContent=bodegas[0][0];
-    document.getElementById('gm-bod1').textContent=bodegas[0][0];
-    document.getElementById('gm-bod1s').textContent=bodegas[0][1]+' cruces · '+pct(bodegas[0][1],totI);
-    if(bodegas[1]){document.getElementById('gm-bod2').textContent=bodegas[1][0];document.getElementById('gm-bod2s').textContent=bodegas[1][1]+' cruces';}
-    const others=bodegas.slice(2).reduce((s,[,v])=>s+v,0);
-    document.getElementById('gm-bodN').textContent=others;
-    document.getElementById('gm-bodNs').textContent=(bodegas.length-2)+' bodegas más';
-    document.getElementById('gh-bod-sub').textContent=bodegas.length+' bodegas en total · '+totI+' cruces';
+function hoyF(t,btn){
+  hoyFV=t;
+  document.querySelectorAll('#pg-hoy .fb-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderHoy();
+}
+
+/* GENERAL */
+function renderGeneral(){
+  const tI=IMP.length,tE=EXP.length,tot=tI+tE;
+  const impBD={};IMP.forEach(r=>{const d=getDate(r,false);if(d)impBD[d]=(impBD[d]||0)+1});
+  const days=Object.keys(impBD).sort();
+  const allOps=new Set([...IMP.map(r=>(r.OPERADOR||'').trim().toUpperCase()),...EXP.map(r=>(r.OPERADOR||'').trim().toUpperCase())].filter(Boolean));
+  const bods=cnt(IMP,'BODEGA'),tipos=cnt(IMP,'TIPO'),clis=cnt(EXP,'CLIENTE'),dests=cnt(EXP,'DESTINO');
+  const ic={},ec={};
+  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ic[k]=(ic[k]||0)+1});
+  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ec[k]=(ec[k]||0)+1});
+  const opArr=[...new Set([...Object.keys(ic),...Object.keys(ec)])].map(k=>({n:k,imp:ic[k]||0,exp:ec[k]||0,tot:(ic[k]||0)+(ec[k]||0)})).sort((a,b)=>b.tot-a.tot);
+  set('g-imp',tI);set('g-exp',tE);set('g-tot',tot);
+  set('g-days',days.length);
+  set('g-exps','Destinos: '+(dests.slice(0,2).map(([k])=>k).join(', ')||'—'));
+  set('g-opss',allOps.size+' operadores activos');
+  set('g-rng',days.length?fmtD(days[0])+' → '+fmtD(days[days.length-1]):'—');
+  if(bods[0]){
+    set('g-bod-c',bods[0][0]);set('gm1',bods[0][0]);set('gm1s',bods[0][1]+' · '+pct(bods[0][1],tI));
+    if(bods[1]){set('gm2',bods[1][0]);set('gm2s',bods[1][1]+' cruces');}
+    const r2=bods.slice(2).reduce((s,[,v])=>s+v,0);set('gmN',r2);set('gmNs',(bods.length-2)+' más');
+    set('g-bod-s',bods.length+' bodegas · '+tI+' cruces');
   }
-  renderBars('g-bodega-bars',bodegas,totI,'#2880e0',8);
-  if(clientes[0]){
-    document.getElementById('gh-cli-badge').textContent=clientes[0][0]+' '+pct(clientes[0][1],totE);
-  }
-  renderBars('g-cliente-bars',clientes,totE,'#c9a227',6,'w110');
-  const col4=['#2880e0','#c9a227','#22c97a','#8a97b0'];
-  donut('donut-tipo','donut-legend-tipo',tipos.slice(0,4),totI,col4);
-  const maxTop=opsSorted[0]?.tot||1;
-  document.getElementById('g-top-ops').innerHTML=opsSorted.slice(0,6).map(o=>`<div class="br"><div class="bl w110">${o.n}</div><div class="bt"><div class="bf" style="width:${Math.round((o.tot/maxTop)*100)}%;background:${o.imp>0&&o.exp>0?'#c9a227':o.imp>0?'#2880e0':'#22c97a'}"></div></div><div class="bn">${o.tot}</div><div class="bp" style="display:flex;gap:3px"><span style="color:var(--blue2);font-size:10px">${o.imp}</span><span style="color:var(--text3);">/</span><span style="color:var(--gold2);font-size:10px">${o.exp}</span></div></div>`).join('');
-  const topB=bodegas[0],topC=clientes[0],bimodal=opsSorted.filter(o=>o.imp>0&&o.exp>0).length,topOp=opsSorted[0];
-  document.getElementById('ins-g1').innerHTML=topB?`<strong>${topB[0]}</strong> concentra ${topB[1]} de ${totI} cruces (${pct(topB[1],totI)}). Alta dependencia de una sola bodega.`:'—';
-  document.getElementById('ins-g2').innerHTML=topC?`<strong>${topC[0]}</strong> representa ${topC[1]} de ${totE} órdenes (${pct(topC[1],totE)}). Riesgo de concentración de cliente.`:'—';
-  document.getElementById('ins-g3').innerHTML=`<strong>${bimodal} operadores</strong> activos en IMP y EXP. Líder: <strong>${topOp?.n||'—'}</strong> con ${topOp?.imp||0}+${topOp?.exp||0}.`;
- 
-  // --- IMP PAGE ---
+  if(clis[0])set('g-cli-c',clis[0][0]+' · '+pct(clis[0][1],tE));
+  bars('g-bods',bods,tI,'var(--ab2)',8);
+  bars('g-clis',clis,tE,'var(--au2)',6,'w100');
+  donut('dn-g','dl-g',tipos.slice(0,4),tI,['#1e6ad4','#d4a020','#10b876','#7d8ea8']);
+  const mx=opArr[0]?.tot||1;
+  $('g-tops').innerHTML=opArr.slice(0,6).map(o=>{
+    const wi=Math.round(o.imp/mx*100),we=Math.round(o.exp/mx*100);
+    return `<div class="br"><div class="bl w100">${o.n}</div><div class="bt" style="display:flex;gap:1px;background:var(--bg4);height:5px"><div style="width:${wi}%;background:var(--ab2);height:5px;border-radius:2px 0 0 2px"></div><div style="width:${we}%;background:var(--au2);height:5px;border-radius:0 2px 2px 0"></div></div><div class="bn">${o.tot}</div><div class="bp" style="display:flex;gap:2px;font-size:9px"><span style="color:var(--ab3)">${o.imp}</span>/<span style="color:var(--au2)">${o.exp}</span></div></div>`;
+  }).join('');
+  const bimod=opArr.filter(o=>o.imp>0&&o.exp>0).length,top=opArr[0],topB=bods[0],topC=clis[0];
+  $('ins1').innerHTML=topB?`<strong>${topB[0]}</strong> concentra ${topB[1]} de ${tI} cruces (${pct(topB[1],tI)}). Dependencia alta.`:'—';
+  $('ins2').innerHTML=topC?`<strong>${topC[0]}</strong> representa ${topC[1]} de ${tE} órdenes (${pct(topC[1],tE)}). Riesgo de cliente único.`:'—';
+  $('ins3').innerHTML=`<strong>${bimod}</strong> operadores en ambas operaciones. Líder: <strong>${top?.n||'—'}</strong> · ${top?.imp||0}+${top?.exp||0}.`;
+}
+
+/* IMP */
+function renderImp(){
+  const tI=IMP.length;
+  const tipos=cnt(IMP,'TIPO'),bods=cnt(IMP,'BODEGA');
   const cjc=tipos.find(([k])=>k.includes('CJ')&&k.includes('CARG'))?.[1]||0;
   const pltc=tipos.find(([k])=>k.includes('PLT')&&k.includes('CARG'))?.[1]||0;
-  const vac=totI-cjc-pltc;
-  document.getElementById('i-tot').textContent=totI;
-  document.getElementById('i-cjc').textContent=cjc;document.getElementById('i-cjc-s').textContent=pct(cjc,totI);
-  document.getElementById('i-pltc').textContent=pltc;document.getElementById('i-pltc-s').textContent=pct(pltc,totI);
-  document.getElementById('i-vac').textContent=vac;document.getElementById('i-vac-s').textContent=pct(vac,totI);
-  renderBars('i-bodega-bars',bodegas,totI,'#2880e0',12);
-  donut('donut-imp','donut-legend-imp',tipos.slice(0,4),totI,col4);
-  // Trend bars for imp
-  const sortedDays=days.sort();
-  const maxDayV=Math.max(...sortedDays.map(d=>impByDay[d]||0),1);
-  document.getElementById('i-trend-sub').textContent=sortedDays.length+' días · '+totI+' cruces total';
-  document.getElementById('i-trend-bars').innerHTML=sortedDays.map(d=>{
-    const v=impByDay[d]||0;const h=Math.max(10,Math.round((v/maxDayV)*80));
-    const shade=v===maxDayV?'#1e6abf':v>=maxDayV*0.75?'#2880e0':v>=maxDayV*0.5?'#378add':'#5aaeff';
-    return `<div class="trend-col"><div class="tc-val">${v}</div><div class="tc-bar" style="height:${h}px;background:${shade}"></div><div class="tc-lbl">${fmtDate(d)}</div></div>`;
+  const vac=tI-cjc-pltc;
+  set('i-tot',tI);set('i-cjc',cjc);set('i-cjcs',pct(cjc,tI));
+  set('i-plt',pltc);set('i-plts',pct(pltc,tI));set('i-vac',vac);set('i-vacs',pct(vac,tI));
+  bars('i-bods',bods,tI,'var(--ab2)',12);
+  donut('dn-i','dl-i',tipos.slice(0,4),tI,['#1e6ad4','#d4a020','#10b876','#7d8ea8']);
+  const bd={};IMP.forEach(r=>{const d=getDate(r,false);if(d)bd[d]=(bd[d]||0)+1});
+  const sdays=Object.keys(bd).sort();
+  const mx=Math.max(...Object.values(bd),1);
+  set('i-ts',sdays.length+' días · '+tI+' cruces');
+  $('i-tc').innerHTML=sdays.map(d=>{
+    const v=bd[d];const h=Math.max(5,Math.round(v/mx*82));
+    const sh=v===mx?'#1250a8':v>=mx*.75?'#1e6ad4':v>=mx*.5?'#2878e0':'#5aabff';
+    return `<div class="tcc"><div class="tc-v">${v}</div><div class="tc-bar" style="height:${h}px;background:${sh}"></div><div class="tc-l">${fmtD(d)}</div></div>`;
   }).join('');
-  // IMP ops table
-  const impOpsArr=Object.entries(impC).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('i-ops-tbody').innerHTML=impOpsArr.map(([k,v])=>{
-    const bods=[...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.BODEGA||'').trim()))].slice(0,2).join(', ');
-    return `<tr><td><span class="av av-b">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--blue2)">${v}</td><td class="r">${pct(v,totI)}</td><td style="font-size:11px;color:var(--text3)">${bods}</td></tr>`;
+  const ic={};IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ic[k]=(ic[k]||0)+1});
+  $('i-otb').innerHTML=Object.entries(ic).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+    const bs=[...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.BODEGA||'').trim()))].slice(0,2).join(', ');
+    return `<tr><td><span class="av ab">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--ab3)">${v}</td><td class="r">${pct(v,tI)}</td><td style="font-size:11px;color:var(--tx3);font-family:var(--fM)">${bs}</td></tr>`;
   }).join('');
- 
-  // --- EXP PAGE ---
-  document.getElementById('e-tot').textContent=totE;
-  if(clientes[0]){document.getElementById('e-cli1').textContent=clientes[0][0];document.getElementById('e-cli1-s').textContent=clientes[0][1]+' órdenes · '+pct(clientes[0][1],totE);}
-  if(destinos[0]){document.getElementById('e-dest1').textContent=destinos[0][0];document.getElementById('e-dest1-s').textContent=destinos[0][1]+' órdenes · '+pct(destinos[0][1],totE);}
-  const otros=clientes.slice(1).reduce((s,[,v])=>s+v,0);
-  document.getElementById('e-otros').textContent=otros;
-  document.getElementById('e-otros-s').textContent=(clientes.length-1)+' otros clientes';
-  renderBars('e-cliente-bars',clientes,totE,'#c9a227',7,'w110');
-  renderBars('e-destino-bars',destinos,totE,'#e8b830',5,'w110');
-  const expOpsArr=Object.entries(expC).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('e-ops-tbody').innerHTML=expOpsArr.map(([k,v])=>{
-    const clis=[...new Set(EXP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.CLIENTE||'').trim()))].slice(0,2).join(', ');
-    return `<tr><td><span class="av av-g">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--gold2)">${v}</td><td class="r">${pct(v,totE)}</td><td style="font-size:11px;color:var(--text3)">${clis}</td></tr>`;
-  }).join('');
- 
-  renderOpsPage();
-  renderTrendPage();
-  document.getElementById('last-upd').textContent=new Date().toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 }
- 
-async function refreshData(){
-  const btn=document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-  try{
-    IMP=await fetchTable('IMPORTACION');
-    EXP=await fetchTable('EXPORTACION');
-    renderAll();
-  }catch(e){alert('Error al actualizar: '+e.message);}
-  btn.classList.remove('spinning');
+
+/* EXP */
+function renderExp(){
+  const tE=EXP.length;
+  const clis=cnt(EXP,'CLIENTE'),dests=cnt(EXP,'DESTINO');
+  const ot=clis.slice(1).reduce((s,[,v])=>s+v,0);
+  set('e-tot',tE);
+  if(clis[0]){set('e-c1',clis[0][0]);set('e-c1s',clis[0][1]+' órdenes · '+pct(clis[0][1],tE));}
+  if(dests[0]){set('e-d1',dests[0][0]);set('e-d1s',dests[0][1]+' órdenes · '+pct(dests[0][1],tE));}
+  set('e-ot',ot);set('e-ots',(clis.length-1)+' otros');
+  bars('e-cbs',clis,tE,'var(--au2)',7,'w100');
+  bars('e-dbs',dests,tE,'var(--au)',5,'w100');
+  const ec={};EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ec[k]=(ec[k]||0)+1});
+  $('e-otb').innerHTML=Object.entries(ec).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+    const cs=[...new Set(EXP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.CLIENTE||'').trim()))].slice(0,2).join(', ');
+    return `<tr><td><span class="av au">${k.substring(0,2)}</span>${k}</td><td class="r" style="color:var(--au2)">${v}</td><td class="r">${pct(v,tE)}</td><td style="font-size:11px;color:var(--tx3);font-family:var(--fM)">${cs}</td></tr>`;
+  }).join('');
 }
- 
+
+/* OPS */
+function getOpData(){
+  const ic={},ec={};
+  IMP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ic[k]=(ic[k]||0)+1});
+  EXP.forEach(r=>{const k=(r.OPERADOR||'').trim().toUpperCase();if(k)ec[k]=(ec[k]||0)+1});
+  return [...new Set([...Object.keys(ic),...Object.keys(ec)])].map(k=>({n:k,imp:ic[k]||0,exp:ec[k]||0,tot:(ic[k]||0)+(ec[k]||0)}));
+}
+function renderOps(){
+  let ops=getOpData();
+  if(opsFV==='both')ops=ops.filter(o=>o.imp>0&&o.exp>0);
+  else if(opsFV==='imp')ops=ops.filter(o=>o.imp>0&&o.exp===0);
+  else if(opsFV==='exp')ops=ops.filter(o=>o.exp>0&&o.imp===0);
+  const sv=$('ops-sort')?.value||'tot';
+  if(sv==='imp')ops.sort((a,b)=>b.imp-a.imp);
+  else if(sv==='exp')ops.sort((a,b)=>b.exp-a.exp);
+  else if(sv==='name')ops.sort((a,b)=>a.n.localeCompare(b.n));
+  else ops.sort((a,b)=>b.tot-a.tot);
+  set('ops-lbl',ops.length+' operadores · clic para detalle');
+  const mx=ops[0]?.tot||1;
+  $('ops-tb').innerHTML=ops.map((o,i)=>{
+    let cls,avc;
+    if(o.imp>0&&o.exp>0){cls='au';avc='au';}else if(o.imp>0){cls='ab';avc='ab';}else{cls='ae';avc='ae';}
+    const tipo=o.imp>0&&o.exp>0?'IMP+EXP':o.imp>0?'Solo IMP':'Solo EXP';
+    const wi=Math.round(o.imp/mx*80),we=Math.round(o.exp/mx*80);
+    const esc=JSON.stringify(o).replace(/"/g,'&quot;');
+    return `<tr onclick="openOp(${esc})">
+      <td style="color:var(--tx3);font-family:var(--fM);font-size:10px">${i+1}</td>
+      <td><span class="av ${avc}">${o.n.substring(0,2)}</span>${o.n}</td>
+      <td class="r" style="color:var(--ab3)">${o.imp}</td>
+      <td class="r" style="color:var(--au2)">${o.exp}</td>
+      <td class="r">${o.tot}</td>
+      <td><span class="chip ${cls}">${tipo}</span></td>
+      <td><div class="mbw">${o.imp?`<div class="mbs" style="width:${wi}px;background:var(--ab2)"></div>`:''}${o.exp?`<div class="mbs" style="width:${we}px;background:var(--au2)"></div>`:''}</div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--tx3);padding:24px">Sin operadores</td></tr>';
+}
+function opsF(t,btn){
+  opsFV=t;
+  document.querySelectorAll('#pg-ops .fbar .fb-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderOps();
+}
+function openOp(o){
+  set('od-av',o.n.substring(0,2));set('od-n',o.n);
+  const tipo=o.imp>0&&o.exp>0?'IMP + EXP':o.imp>0?'Solo IMP':'Solo EXP';
+  set('od-s',tipo+' · '+o.tot+' movimientos');
+  set('od-i',o.imp);set('od-e',o.exp);set('od-t',o.tot);set('od-tp',tipo);
+  const bs=[...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===o.n).map(r=>(r.BODEGA||'').trim()).filter(Boolean))];
+  set('od-b',bs.length?bs.join(' · '):'Sin IMP registrado');
+  const d=$('opp');d.classList.add('on');d.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeOp(){$('opp').classList.remove('on')}
+
+/* TREND */
+function renderTrend(){
+  const iBD={},eBD={};
+  IMP.forEach(r=>{const d=getDate(r,false);if(d)iBD[d]=(iBD[d]||0)+1});
+  EXP.forEach(r=>{const d=getDate(r,true);if(d)eBD[d]=(eBD[d]||0)+1});
+  const days=[...new Set([...Object.keys(iBD),...Object.keys(eBD)])].sort();
+  const labels=days.map(d=>fmtD(d));
+  let d1=[],d2=[],c1,c2,title,sub;
+  if(trendV==='imp'){d1=days.map(d=>iBD[d]||0);c1='#1e6ad4';title='Cruces por día — IMP';sub='Solo importación';}
+  else if(trendV==='exp'){d1=days.map(d=>eBD[d]||0);c1='#d4a020';title='Órdenes por día — EXP';sub='Solo exportación';}
+  else{d1=days.map(d=>iBD[d]||0);d2=days.map(d=>eBD[d]||0);c1='#1e6ad4';c2='#d4a020';title='Movimientos IMP+EXP';sub='Azul = IMP · Dorado = EXP';}
+  set('t-ct',title);set('t-cs',sub);
+  if(tChart)tChart.destroy();
+  const dsets=[{label:'IMP',data:d1,backgroundColor:c1+'1a',borderColor:c1,borderWidth:2,pointBackgroundColor:c1,pointRadius:3,tension:.35,fill:true}];
+  if(trendV==='all')dsets.push({label:'EXP',data:d2,backgroundColor:c2+'1a',borderColor:c2,borderWidth:2,pointBackgroundColor:c2,pointRadius:3,tension:.35,fill:true});
+  tChart=new Chart($('t-chart').getContext('2d'),{
+    type:'line',data:{labels,datasets:dsets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:trendV==='all',labels:{color:'#7d8ea8',font:{size:10,family:'DM Mono'}}}},
+      scales:{x:{ticks:{color:'#3a4560',font:{size:9,family:'DM Mono'}},grid:{color:'rgba(255,255,255,0.03)'}},y:{ticks:{color:'#3a4560',font:{size:9,family:'DM Mono'},stepSize:1},grid:{color:'rgba(255,255,255,0.05)'}}}}
+  });
+  const tipos=cnt(IMP,'TIPO'),tI=IMP.length,mx=tipos[0]?tipos[0][1]:1;
+  $('t-tipos').innerHTML=tipos.map(([k,v])=>`<div class="br"><div class="bl w100">${k}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:var(--ab2)"></div></div><div class="bn">${v}</div><div class="bp">${pct(v,tI)}</div></div>`).join('');
+  const peakD=days.reduce((b,d)=>{const v=(iBD[d]||0)+(eBD[d]||0);return v>(b.v||0)?{d,v}:b},{});
+  const tI2=IMP.length,tE2=EXP.length;
+  const avgI=days.filter(d=>iBD[d]).length?Math.round(tI2/days.filter(d=>iBD[d]).length):0;
+  const avgE=days.filter(d=>eBD[d]).length?Math.round(tE2/days.filter(d=>eBD[d]).length):0;
+  $('t-kpis').innerHTML=`
+    <div class="kpi ab"><div class="k-lbl">Prom. IMP/día</div><div class="k-val">${avgI}</div><div class="k-sub">cruces por jornada</div></div>
+    <div class="kpi au"><div class="k-lbl">Prom. EXP/día</div><div class="k-val">${avgE}</div><div class="k-sub">órdenes por jornada</div></div>
+    <div class="kpi pl"><div class="k-lbl">Días con datos</div><div class="k-val">${days.length}</div><div class="k-sub">${days.length?fmtD(days[0])+' → '+fmtD(days[days.length-1]):'—'}</div></div>
+    <div class="kpi ae"><div class="k-lbl">Pico total</div><div class="k-val">${peakD.v||0}</div><div class="k-sub">${fmtDF(peakD.d)||'—'}</div></div>`;
+  set('t-pk',fmtD(peakD.d)||'—');set('t-pkv',(peakD.v||0)+' movimientos ese día');
+  $('t-pkb').innerHTML=peakD.d?`
+    <div class="br"><div class="bl w90">IMP</div><div class="bt"><div class="bf" style="width:${pN(iBD[peakD.d]||0,peakD.v)}%;background:var(--ab2)"></div></div><div class="bn">${iBD[peakD.d]||0}</div></div>
+    <div class="br"><div class="bl w90">EXP</div><div class="bt"><div class="bf" style="width:${pN(eBD[peakD.d]||0,peakD.v)}%;background:var(--au2)"></div></div><div class="bn">${eBD[peakD.d]||0}</div></div>`:'';
+}
+function trendF(t,btn){
+  trendV=t;
+  document.querySelectorAll('#pg-trend .fbar .fb-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTrend();
+}
+
+function renderAll(){
+  renderHoy();renderGeneral();renderImp();renderExp();renderOps();renderTrend();
+  set('upd',new Date().toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}));
+}
+
+async function doRefresh(){
+  const btn=$('rbtn');btn.classList.add('spin');
+  try{IMP=await fetchT('IMPORTACION');EXP=await fetchT('EXPORTACION');if(tChart){tChart.destroy();tChart=null;}renderAll();}
+  catch(e){alert('Error: '+e.message);}
+  btn.classList.remove('spin');
+}
+
 async function main(){
   try{
-    IMP=await fetchTable('IMPORTACION');
-    EXP=await fetchTable('EXPORTACION');
+    IMP=await fetchT('IMPORTACION');
+    EXP=await fetchT('EXPORTACION');
     renderAll();
-    document.getElementById('loader').style.display='none';
-    document.getElementById('app').style.display='block';
-    setInterval(refreshData, 5*60*1000);
+    $('loader').style.display='none';
+    $('app').style.display='block';
+    setInterval(doRefresh,5*60*1000);
   }catch(e){
-    document.getElementById('loader-txt').textContent='Error: '+e.message+' · Verifica API Key y conexión.';
-    document.getElementById('loader-txt').style.color='#ff4d6a';
+    set('ldm','Error: '+e.message);
+    $('ldm').style.color='#d42038';
   }
 }
 main();
 </script>
 </body>
 </html>
-
