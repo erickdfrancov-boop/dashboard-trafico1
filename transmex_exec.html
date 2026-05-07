@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TransMex · Centro de Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — EXECUTIVE PALETTE
+   Inspirado en Bloomberg Terminal + 
+   Goldman Sachs internal tools
+═══════════════════════════════════════ */
+:root{
+  /* Foundations */
+  --coal:     #07090e;
+  --onyx:     #0b0e15;
+  --graphite: #10141e;
+  --slate:    #161b28;
+  --steel:    #1c2335;
+  --pewter:   #232c42;
+  --storm:    #2c3650;
+
+  /* Borders */
+  --wire:     rgba(255,255,255,0.045);
+  --wire2:    rgba(255,255,255,0.08);
+  --wire3:    rgba(255,255,255,0.13);
+
+  /* Typography */
+  --white:    #f0f4fc;
+  --fog:      #8896b0;
+  --smoke:    #4a5570;
+
+  /* Gold — TransMex identity */
+  --G:        #b8930c;
+  --G2:       #d4aa18;
+  --G3:       #f2c832;
+  --Gb:       rgba(184,147,12,0.09);
+  --Gw:       rgba(212,170,24,0.20);
+
+  /* Sapphire — operational blue */
+  --B:        #104ea0;
+  --B2:       #1a6ed0;
+  --B3:       #4fa3ff;
+  --Bb:       rgba(16,78,160,0.12);
+  --Bw:       rgba(26,110,208,0.24);
+
+  /* Jade — positive / today */
+  --E:        #0b7a50;
+  --E2:       #0fa868;
+  --E3:       #40d090;
+  --Eb:       rgba(11,122,80,0.10);
+  --Ew:       rgba(15,168,104,0.22);
+
+  /* Crimson — alerts */
+  --R:        #9c1c28;
+  --R2:       #d42038;
+  --Rb:       rgba(156,28,40,0.10);
+
+  /* Radii & type */
+  --rS: 4px; --rM: 8px; --rL: 12px;
+  --fH: 'Playfair Display', Georgia, serif;
+  --fB: 'IBM Plex Sans', system-ui, sans-serif;
+  --fM: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+/* ══ RESET & BASE ══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--coal);
+  color: var(--white);
+  font-family: var(--fB);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: var(--onyx); }
+::-webkit-scrollbar-thumb { background: var(--storm); border-radius: 2px; }
+
+/* ══ LOADER ══ */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--coal);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 28px; z-index: 9999;
+}
+.ld-mark {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+}
+.ld-crest { position: relative; width: 56px; height: 56px; }
+.ld-crest svg { width: 56px; height: 56px; }
+.ld-wordmark {
+  font-family: var(--fH);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--white);
+}
+.ld-wordmark span { color: var(--G2); }
+.ld-rule { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, var(--G2), transparent); }
+.ld-progress { width: 200px; height: 1px; background: var(--steel); position: relative; overflow: hidden; }
+.ld-progress::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--G2), var(--G3), transparent);
+  animation: sweep 1.4s ease-in-out infinite;
+}
+@keyframes sweep { to { left: 100%; } }
+.ld-status {
+  font-family: var(--fM);
+  font-size: 10px;
+  color: var(--smoke);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* ══ APP SHELL ══ */
+#app { display: none; }
+
+/* ══ TOPBAR ══ */
+#topbar {
+  position: sticky; top: 0; z-index: 200;
+  height: 54px;
+  background: rgba(7,9,14,0.96);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--wire2);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  box-shadow: 0 1px 0 var(--wire), 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* Brand */
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-crest svg { width: 30px; height: 30px; }
+.brand-text { display: flex; flex-direction: column; }
+.brand-name {
+  font-family: var(--fH);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--white);
+  letter-spacing: -0.2px;
+}
+.brand-name span { color: var(--G2); }
+.brand-sub {
+  font-family: var(--fM);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--smoke);
+  margin-top: 2px;
+}
+
+/* Nav */
+.nav { display: flex; align-items: center; gap: 1px; }
+.nav-btn {
+  background: none; border: none;
+  font-family: var(--fB); font-size: 12px; font-weight: 500;
+  color: var(--smoke); cursor: pointer;
+  padding: 6px 16px; border-radius: var(--rS);
+  transition: color .15s, background .15s;
+  white-space: nowrap; position: relative;
+}
+.nav-btn:hover { color: var(--fog); background: var(--wire); }
+.nav-btn.active {
+  color: var(--G2);
+  background: var(--Gb);
+}
+.nav-btn.active::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 18px; height: 1px;
+  background: var(--G2);
+}
+.nav-btn.today-btn { color: var(--E2) !important; }
+.nav-btn.today-btn.active {
+  background: var(--Eb) !important;
+  color: var(--E2) !important;
+}
+.nav-btn.today-btn.active::after { background: var(--E2) !important; }
+
+/* Controls */
+.controls { display: flex; align-items: center; gap: 10px; }
+.upd-label {
+  font-family: var(--fM); font-size: 9px;
+  color: var(--smoke); letter-spacing: 0.8px;
+}
+.btn-refresh {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--slate); border: 1px solid var(--wire2);
+  color: var(--fog); padding: 5px 13px;
+  border-radius: var(--rS); font-size: 11px;
+  font-family: var(--fB); cursor: pointer;
+  transition: all .18s;
+}
+.btn-refresh:hover { background: var(--steel); color: var(--white); }
+.btn-refresh svg { transition: transform .5s; }
+.btn-refresh.spinning svg { animation: spin360 .5s linear infinite; }
+@keyframes spin360 { to { transform: rotate(360deg); } }
+.live-indicator {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--fM); font-size: 9px; letter-spacing: 1px;
+  color: var(--E2);
+  background: var(--Eb);
+  border: 1px solid var(--Ew);
+  padding: 4px 10px; border-radius: 2px;
+}
+.live-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--E2);
+  animation: breathe 2s ease infinite;
+}
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.5); }
+}
+
+/* ══ MAIN ══ */
+#main { padding: 24px 28px 64px; max-width: 1300px; margin: 0 auto; }
+.page { display: none; }
+.page.active { display: block; animation: pageIn .25s ease; }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══ PAGE HEADER ══ */
+.ph {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--wire);
+}
+.ph-title {
+  font-family: var(--fH);
+  font-size: 26px; font-weight: 800;
+  color: var(--white); letter-spacing: -0.5px;
+  line-height: 1;
+}
+.ph-sub { font-size: 11px; color: var(--smoke); margin-top: 5px; font-family: var(--fM); letter-spacing: 0.5px; }
+
+/* ══ KPI CARDS ══ */
+.kgrid { display: grid; gap: 10px; margin-bottom: 16px; }
+.k4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.k3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.k5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+
+.kcard {
+  background: var(--graphite);
+  border: 1px solid var(--wire);
+  border-top: 2px solid transparent;
+  border-radius: var(--rM);
+  padding: 18px 20px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s, transform .18s, box-shadow .18s;
+}
+.kcard:hover {
+  border-color: var(--wire2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.kcard.kG { border-top-color: var(--G2); }
+.kcard.kB { border-top-color: var(--B2); }
+.kcard.kE { border-top-color: var(--E2); }
+.kcard.kN { border-top-color: var(--wire3); }
+
+/* KPI label */
+.k-label {
+  font-family: var(--fM);
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--smoke);
+  margin-bottom: 10px;
+}
+/* KPI value — same size always */
+.k-value {
+  font-family: var(--fM);
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--white);
+}
+.kcard.kG .k-value { color: var(--G2); }
+.kcard.kB .k-value { color: var(--B3); }
+.kcard.kE .k-value { color: var(--E2); }
+
+/* KPI text value (words not numbers) */
+.k-value-text {
+  font-family: var(--fH);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--white);
+  margin-top: 4px;
+}
+.kcard.kG .k-value-text { color: var(--G2); }
+.kcard.kB .k-value-text { color: var(--B3); }
+
+.k-meta { font-size: 11px; color: var(--smoke); margin-top: 8px; }
+.k-badge {
+  display: inline-block;
+  font-family: var(--fM); font-size: 9px;
+  letter-spacing: 0.5px;
+  padding: 2px 8px; border-radius: 2px;
+  margin-top: 7px;
+}
+.kcard.kG .k-badge { background: var(--Gb); color: var(--G2); }
+.kcard.kB .k-badge { background: var(--Bb); color: var(--B3); }
+.kcard.kE .k-badge { background: var(--Eb); color: var(--E2); }
+
+/* ══ PANEL (CARD) ══ */
+.panel {
+  background: var(--graphite);
+  border: 1px solid var(--wire);
+  border-radius: var(--rL);
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.panel:hover { border-color: var(--wire2); }
+.panel-head {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--wire);
+  background: var(--onyx);
+}
+.panel-title {
+  font-family: var(--fM);
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--fog);
+}
+.panel-sub { font-size: 10px; color: var(--smoke); font-family: var(--fM); margin-top: 2px; }
+.panel-body { padding: 16px 20px; }
+
+/* Section label */
+.sec-label {
+  font-family: var(--fM);
+  font-size: 9px; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--smoke);
+  margin-bottom: 10px;
+}
+
+/* ══ GRID LAYOUTS ══ */
+.g2 { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 12px; margin-bottom: 12px; }
+.g2r { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.4fr); gap: 12px; margin-bottom: 12px; }
+.g2e { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+.mb { margin-bottom: 12px; }
+
+/* ══ BADGE / TAG ══ */
+.tag {
+  display: inline-flex; align-items: center;
+  font-family: var(--fM); font-size: 9px;
+  letter-spacing: 0.6px; padding: 3px 8px;
+  border-radius: 2px; white-space: nowrap;
+}
+.tag-G { background: var(--Gb); color: var(--G2); border: 1px solid var(--Gw); }
+.tag-B { background: var(--Bb); color: var(--B3); border: 1px solid var(--Bw); }
+.tag-E { background: var(--Eb); color: var(--E2); border: 1px solid var(--Ew); }
+.tag-N { background: var(--wire); color: var(--fog); border: 1px solid var(--wire2); }
+.tag-R { background: var(--Rb); color: var(--R2); }
+
+/* ══ BARS ══ */
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.bar-label {
+  font-size: 11px; color: var(--fog);
+  flex-shrink: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.bar-label.w130 { width: 130px; }
+.bar-label.w110 { width: 110px; }
+.bar-label.w90  { width: 90px; }
+.bar-track {
+  flex: 1; background: var(--slate);
+  border-radius: 1px; height: 4px; overflow: hidden;
+}
+.bar-fill {
+  height: 4px; border-radius: 1px;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+.bar-num {
+  font-family: var(--fM); font-size: 12px;
+  font-weight: 500; color: var(--white);
+  width: 24px; text-align: right; flex-shrink: 0;
+}
+.bar-pct {
+  font-family: var(--fM); font-size: 10px;
+  color: var(--smoke); width: 32px;
+  text-align: right; flex-shrink: 0;
+}
+.more-label {
+  font-family: var(--fM); font-size: 10px;
+  color: var(--smoke); margin-top: 8px;
+  padding-top: 8px; border-top: 1px solid var(--wire);
+}
+
+/* ══ DONUT ══ */
+.donut-wrap { display: flex; align-items: center; gap: 22px; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+.legend-row { display: flex; align-items: center; gap: 8px; }
+.legend-swatch { width: 8px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+.legend-name { font-size: 12px; color: var(--fog); flex: 1; }
+.legend-val { font-family: var(--fM); font-size: 12px; font-weight: 500; color: var(--white); }
+.legend-pct { font-family: var(--fM); font-size: 10px; color: var(--smoke); margin-left: 4px; }
+
+/* ══ TABLE ══ */
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+.data-table th {
+  font-family: var(--fM); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--smoke); text-align: left;
+  padding: 9px 14px; border-bottom: 1px solid var(--wire);
+  font-weight: 500; background: var(--onyx);
+}
+.data-table th.r { text-align: right; }
+.data-table td {
+  font-size: 12px; color: var(--white);
+  padding: 9px 14px; border-bottom: 1px solid var(--wire);
+  transition: background .12s;
+}
+.data-table td.r {
+  text-align: right;
+  font-family: var(--fM); font-weight: 500;
+}
+.data-table tbody tr { cursor: pointer; }
+.data-table tbody tr:hover td { background: var(--slate); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* Avatar */
+.av {
+  width: 26px; height: 26px; border-radius: 3px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--fM); font-size: 10px; font-weight: 500;
+  margin-right: 8px; vertical-align: middle;
+}
+.av-B { background: var(--Bb); color: var(--B3); border: 1px solid var(--Bw); }
+.av-G { background: var(--Gb); color: var(--G2); border: 1px solid var(--Gw); }
+.av-E { background: var(--Eb); color: var(--E2); border: 1px solid var(--Ew); }
+
+/* Mini bar */
+.mini-bar { display: flex; gap: 2px; align-items: center; }
+.mini-seg { height: 3px; border-radius: 1px; min-width: 3px; }
+
+/* ══ TREND COLUMNS ══ */
+.trend-wrap { display: flex; align-items: flex-end; gap: 8px; height: 90px; }
+.trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.trend-bar {
+  width: 100%; border-radius: 2px 2px 0 0;
+  transition: height .9s cubic-bezier(.4,0,.2,1);
+  min-height: 3px;
+}
+.trend-col:hover .trend-bar { opacity: 0.75; }
+.trend-val { font-family: var(--fM); font-size: 9px; font-weight: 500; color: var(--fog); }
+.trend-lbl { font-family: var(--fM); font-size: 8px; color: var(--smoke); white-space: nowrap; }
+
+/* ══ INSIGHTS ══ */
+.insights { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
+.insight {
+  background: var(--graphite);
+  border: 1px solid var(--wire);
+  border-left: 2px solid transparent;
+  border-radius: var(--rM);
+  padding: 14px 16px;
+}
+.insight.iB { border-left-color: var(--B2); }
+.insight.iG { border-left-color: var(--G); }
+.insight.iE { border-left-color: var(--E); }
+.insight-label {
+  font-family: var(--fM); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--smoke); margin-bottom: 6px;
+}
+.insight-text { font-size: 12px; color: var(--fog); line-height: 1.6; }
+.insight-text strong { color: var(--white); font-weight: 600; }
+
+/* ══ FILTER BAR ══ */
+.filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-label { font-family: var(--fM); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--smoke); }
+.filter-btn {
+  background: var(--slate); border: 1px solid var(--wire);
+  color: var(--smoke); padding: 5px 12px; border-radius: var(--rS);
+  font-size: 11px; font-family: var(--fB); cursor: pointer;
+  transition: all .15s;
+}
+.filter-btn:hover { background: var(--steel); color: var(--fog); }
+.filter-btn.active { background: var(--Gb); color: var(--G2); border-color: var(--Gw); }
+.filter-select {
+  background: var(--slate); border: 1px solid var(--wire);
+  color: var(--fog); padding: 5px 11px; border-radius: var(--rS);
+  font-size: 11px; font-family: var(--fB); cursor: pointer; outline: none;
+}
+.filter-select:focus { border-color: var(--Gw); }
+
+/* ══ OPERATOR DETAIL PANEL ══ */
+.op-detail {
+  background: var(--graphite);
+  border: 1px solid var(--Gw);
+  border-radius: var(--rL);
+  padding: 20px; margin-bottom: 14px;
+  display: none;
+}
+.op-detail.open { display: block; animation: pageIn .25s ease; }
+.op-detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.op-avatar-lg {
+  width: 44px; height: 44px; border-radius: var(--rS);
+  background: var(--Gb); border: 1px solid var(--Gw);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fM); font-size: 16px; font-weight: 500;
+  color: var(--G2); flex-shrink: 0;
+}
+.op-close {
+  background: var(--slate); border: 1px solid var(--wire2);
+  color: var(--smoke); width: 26px; height: 26px;
+  border-radius: var(--rS); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all .15s;
+}
+.op-close:hover { color: var(--white); background: var(--steel); }
+.op-stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 14px; }
+.op-stat {
+  background: var(--onyx);
+  border: 1px solid var(--wire);
+  border-radius: var(--rM); padding: 12px 14px; text-align: center;
+}
+.op-stat-label {
+  font-family: var(--fM); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--smoke); margin-bottom: 5px;
+}
+.op-stat-value {
+  font-family: var(--fM); font-size: 28px;
+  font-weight: 500; letter-spacing: -1px;
+}
+
+/* ══ MS ROW (mini stats) ══ */
+.ms-row {
+  display: grid; border-bottom: 1px solid var(--wire);
+}
+.ms-row.c3 { grid-template-columns: repeat(3,1fr); }
+.ms-row.c4 { grid-template-columns: repeat(4,1fr); }
+.ms-cell { padding: 12px 18px; border-right: 1px solid var(--wire); }
+.ms-cell:last-child { border-right: none; }
+.ms-label {
+  font-family: var(--fM); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--smoke); margin-bottom: 4px;
+}
+.ms-value {
+  font-family: var(--fM); font-size: 20px;
+  font-weight: 500; letter-spacing: -0.5px;
+}
+.ms-sub { font-family: var(--fM); font-size: 10px; color: var(--smoke); margin-top: 2px; }
+
+/* ══ DIVIDER ══ */
+.divider { height: 1px; background: var(--wire); margin: 12px 0; }
+
+/* ══ HOY PAGE ══ */
+.hoy-banner {
+  background: var(--graphite);
+  border: 1px solid var(--Gw);
+  border-radius: var(--rL);
+  padding: 18px 24px;
+  margin-bottom: 16px;
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 14px;
+}
+.hoy-date {
+  font-family: var(--fH);
+  font-size: 24px; font-weight: 800;
+  color: var(--G2); letter-spacing: -0.5px;
+}
+.hoy-sub { font-family: var(--fM); font-size: 9px; letter-spacing: 1.2px; color: var(--smoke); margin-top: 4px; text-transform: uppercase; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; }
+.tl-item { display: flex; align-items: stretch; cursor: pointer; }
+.tl-item:hover .tl-card { background: var(--slate); border-color: var(--wire2); }
+.tl-spine { display: flex; flex-direction: column; align-items: center; width: 34px; flex-shrink: 0; padding-top: 13px; }
+.tl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1px solid; }
+.tl-dot.imp { background: var(--Bb); border-color: var(--B3); }
+.tl-dot.exp { background: var(--Gb); border-color: var(--G2); }
+.tl-spine-line { width: 1px; background: var(--wire); flex: 1; margin-top: 4px; }
+.tl-item:last-child .tl-spine-line { display: none; }
+.tl-card {
+  flex: 1; background: var(--graphite);
+  border: 1px solid var(--wire); border-radius: var(--rM);
+  padding: 11px 15px; margin-bottom: 6px;
+  transition: all .15s;
+}
+.tl-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.tl-operator { font-family: var(--fM); font-size: 13px; font-weight: 500; color: var(--white); }
+.tl-meta { display: flex; gap: 12px; font-family: var(--fM); font-size: 10px; color: var(--smoke); flex-wrap: wrap; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 48px 24px; }
+.empty-icon { font-size: 28px; opacity: 0.3; margin-bottom: 12px; }
+.empty-text { font-size: 13px; color: var(--smoke); }
+
+/* Center big number */
+.big-number-wrap { text-align: center; padding: 10px 0 16px; }
+.big-number {
+  font-family: var(--fM);
+  font-size: 52px; font-weight: 500;
+  letter-spacing: -3px; color: var(--white); line-height: 1;
+}
+.big-label {
+  font-family: var(--fM); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 1.8px;
+  color: var(--smoke); margin-top: 6px;
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 900px) {
+  .kgrid.k4, .kgrid.k5 { grid-template-columns: repeat(2,1fr); }
+  .g2, .g2r, .g2e, .g3, .insights { grid-template-columns: 1fr; }
+  .nav { display: none; }
+  #mob-nav { display: flex; }
+  #main { padding: 14px 14px 68px; }
+  .hoy-banner { flex-direction: column; align-items: flex-start; }
+}
+
+/* Mobile nav */
+#mob-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(7,9,14,.96); border-top: 1px solid var(--wire2);
+  backdrop-filter: blur(20px); z-index: 300;
+  padding: 8px 4px 16px;
+}
+.mob-items { display: flex; justify-content: space-around; }
+.mob-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 10px; border-radius: var(--rS); cursor: pointer;
+  font-family: var(--fM); font-size: 8px; letter-spacing: 1px;
+  color: var(--smoke); transition: all .15s;
+}
+.mob-item.active { color: var(--G2); background: var(--Gb); }
+.mob-icon { font-size: 14px; margin-bottom: 1px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOADER ══ -->
+<div id="loader">
+  <div class="ld-mark">
+    <div class="ld-crest">
+      <svg viewBox="0 0 56 64" fill="none">
+        <path d="M28 2L54 11V32C54 49 28 62 28 62C28 62 2 49 2 32V11L28 2Z" fill="#0b0e15" stroke="url(#lg1)" stroke-width="1"/>
+        <path d="M28 9L47 16.5V32C47 45 28 56 28 56C28 56 9 45 9 32V16.5L28 9Z" fill="url(#lg2)" opacity=".12"/>
+        <text x="28" y="40" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="500" font-size="18" fill="url(#lg3)">TM</text>
+        <defs>
+          <linearGradient id="lg1" x1="2" y1="2" x2="54" y2="62"><stop stop-color="#d4aa18"/><stop offset="1" stop-color="#1a6ed0"/></linearGradient>
+          <linearGradient id="lg2" x1="9" y1="9" x2="47" y2="56"><stop stop-color="#d4aa18"/><stop offset="1" stop-color="#1a6ed0"/></linearGradient>
+          <linearGradient id="lg3" x1="9" y1="24" x2="47" y2="44"><stop stop-color="#f2c832"/><stop offset="1" stop-color="#d4aa18"/></linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="ld-wordmark">Trans<span>Mex</span></div>
+  </div>
+  <div class="ld-rule"></div>
+  <div class="ld-progress"></div>
+  <div class="ld-status" id="ld-status">Inicializando sistema operativo</div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="brand">
+      <div class="brand-crest">
+        <svg viewBox="0 0 56 64" fill="none">
+          <path d="M28 2L54 11V32C54 49 28 62 28 62C28 62 2 49 2 32V11L28 2Z" fill="#0b0e15" stroke="url(#tg1)" stroke-width="1"/>
+          <text x="28" y="40" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="500" font-size="18" fill="url(#tg2)">TM</text>
+          <defs>
+            <linearGradient id="tg1" x1="2" y1="2" x2="54" y2="62"><stop stop-color="#d4aa18"/><stop offset="1" stop-color="#1a6ed0"/></linearGradient>
+            <linearGradient id="tg2" x1="9" y1="24" x2="47" y2="44"><stop stop-color="#f2c832"/><stop offset="1" stop-color="#d4aa18"/></linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">Trans<span>Mex</span></div>
+        <div class="brand-sub">Centro de Control Operativo</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn today-btn active" onclick="goPage('hoy',this)">HOY</button>
+      <button class="nav-btn" onclick="goPage('general',this)">Resumen</button>
+      <button class="nav-btn" onclick="goPage('importacion',this)">Importación</button>
+      <button class="nav-btn" onclick="goPage('exportacion',this)">Exportación</button>
+      <button class="nav-btn" onclick="goPage('operadores',this)">Operadores</button>
+      <button class="nav-btn" onclick="goPage('tendencia',this)">Tendencia</button>
+    </nav>
+
+    <div class="controls">
+      <span class="upd-label">UPD <span id="upd-time">—</span></span>
+      <button class="btn-refresh" id="rfbtn" onclick="doRefresh()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+        Actualizar
+      </button>
+      <div class="live-indicator"><div class="live-dot"></div>EN VIVO</div>
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div id="mob-nav">
+    <div class="mob-items">
+      <div class="mob-item active" onclick="goPage('hoy',this)"><div class="mob-icon">◈</div>HOY</div>
+      <div class="mob-item" onclick="goPage('general',this)"><div class="mob-icon">◎</div>RESUMEN</div>
+      <div class="mob-item" onclick="goPage('importacion',this)"><div class="mob-icon">↓</div>IMP</div>
+      <div class="mob-item" onclick="goPage('exportacion',this)"><div class="mob-icon">↑</div>EXP</div>
+      <div class="mob-item" onclick="goPage('operadores',this)"><div class="mob-icon">▣</div>OPS</div>
+    </div>
+  </div>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div id="main">
+
+    <!-- ░░░░ HOY ░░░░ -->
+    <div class="page active" id="page-hoy">
+      <div class="hoy-banner">
+        <div>
+          <div class="hoy-date" id="hoy-fecha">—</div>
+          <div class="hoy-sub">Registros del día actual · Actualización automática</div>
+        </div>
+        <div class="filter-bar" style="margin:0">
+          <span class="filter-label">Filtrar</span>
+          <button class="filter-btn active" onclick="setHoyFilter('all',this)">Todos</button>
+          <button class="filter-btn" onclick="setHoyFilter('imp',this)">Solo IMP</button>
+          <button class="filter-btn" onclick="setHoyFilter('exp',this)">Solo EXP</button>
+        </div>
+      </div>
+
+      <div class="kgrid k4" id="hoy-kpis"></div>
+
+      <div class="g2">
+        <!-- Timeline -->
+        <div class="panel mb">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Actividad del día</div>
+              <div class="panel-sub" id="hoy-tl-sub">Todos los movimientos</div>
+            </div>
+            <span class="tag tag-E" id="hoy-count-tag">0 movimientos</span>
+          </div>
+          <div style="padding: 12px 16px; max-height: 480px; overflow-y: auto;">
+            <div class="timeline" id="hoy-timeline"></div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div>
+          <div class="panel mb">
+            <div class="panel-head"><div class="panel-title">Resumen del día</div></div>
+            <div class="panel-body">
+              <div class="big-number-wrap">
+                <div class="big-number" id="hoy-big">0</div>
+                <div class="big-label">Movimientos totales</div>
+              </div>
+              <div class="divider"></div>
+              <div class="sec-label">Desglose IMP / EXP</div>
+              <div id="hoy-desglose"></div>
+            </div>
+          </div>
+
+          <div class="panel mb">
+            <div class="panel-head"><div class="panel-title">Bodegas activas</div></div>
+            <div class="panel-body" id="hoy-bodegas-wrap"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Operadores en turno</div></div>
+            <div class="panel-body" id="hoy-ops-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░ GENERAL ░░░░ -->
+    <div class="page" id="page-general">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Resumen Operativo</div>
+          <div class="ph-sub">Vista consolidada · IMP + EXP · Todos los registros</div>
+        </div>
+      </div>
+
+      <div class="kgrid k4">
+        <div class="kcard kB">
+          <div class="k-label">Cruces importación</div>
+          <div class="k-value" id="g-imp">—</div>
+          <div class="k-meta">Operación TRANSFER</div>
+          <span class="k-badge">↓ IMP</span>
+        </div>
+        <div class="kcard kG">
+          <div class="k-label">Órdenes exportación</div>
+          <div class="k-value" id="g-exp">—</div>
+          <div class="k-meta" id="g-exp-s">—</div>
+          <span class="k-badge">↑ EXP</span>
+        </div>
+        <div class="kcard kN">
+          <div class="k-label">Total movimientos</div>
+          <div class="k-value" id="g-tot">—</div>
+          <div class="k-meta" id="g-ops-s">—</div>
+        </div>
+        <div class="kcard kE">
+          <div class="k-label">Días con registro</div>
+          <div class="k-value" id="g-days">—</div>
+          <div class="k-meta" id="g-range">—</div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Bodegas — Importación</div>
+              <div class="panel-sub" id="g-bod-sub">Por volumen de cruces</div>
+            </div>
+            <span class="tag tag-B" id="g-bod-tag">—</span>
+          </div>
+          <div class="ms-row c3">
+            <div class="ms-cell">
+              <div class="ms-label">#1 Bodega</div>
+              <div class="ms-value" style="color:var(--B3);font-size:14px" id="gms-1">—</div>
+              <div class="ms-sub" id="gms-1s">—</div>
+            </div>
+            <div class="ms-cell">
+              <div class="ms-label">#2 Bodega</div>
+              <div class="ms-value" style="color:var(--fog);font-size:14px" id="gms-2">—</div>
+              <div class="ms-sub" id="gms-2s">—</div>
+            </div>
+            <div class="ms-cell">
+              <div class="ms-label">Resto</div>
+              <div class="ms-value" id="gms-n">—</div>
+              <div class="ms-sub" id="gms-ns">—</div>
+            </div>
+          </div>
+          <div class="panel-body" id="g-bod-bars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Tipo de carga — IMP</div></div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <canvas id="dn-gen-tipo" width="108" height="108" role="img" aria-label="Tipos de carga">Tipos de carga IMP.</canvas>
+              <div class="donut-legend" id="dl-gen-tipo"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2r">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Clientes — Exportación</div>
+            <span class="tag tag-G" id="g-cli-tag">—</span>
+          </div>
+          <div class="panel-body" id="g-cli-bars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Top operadores — IMP + EXP</div></div>
+          <div class="panel-body" id="g-top-ops"></div>
+        </div>
+      </div>
+
+      <div class="insights">
+        <div class="insight iB">
+          <div class="insight-label">Concentración IMP</div>
+          <div class="insight-text" id="ins-1">—</div>
+        </div>
+        <div class="insight iG">
+          <div class="insight-label">Concentración EXP</div>
+          <div class="insight-text" id="ins-2">—</div>
+        </div>
+        <div class="insight iE">
+          <div class="insight-label">Operatividad</div>
+          <div class="insight-text" id="ins-3">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░ IMPORTACION ░░░░ -->
+    <div class="page" id="page-importacion">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Importación</div>
+          <div class="ph-sub">Cruces registrados · Operación TRANSFER · Todas las fechas</div>
+        </div>
+      </div>
+      <div class="kgrid k4">
+        <div class="kcard kB"><div class="k-label">Total cruces</div><div class="k-value" id="i-tot">—</div></div>
+        <div class="kcard kB"><div class="k-label">CJ Cargada</div><div class="k-value" id="i-cjc">—</div><div class="k-meta" id="i-cjc-s">—</div></div>
+        <div class="kcard kN"><div class="k-label">PLT Cargada</div><div class="k-value" id="i-pltc">—</div><div class="k-meta" id="i-pltc-s">—</div></div>
+        <div class="kcard kN"><div class="k-label">Vacías</div><div class="k-value" id="i-vac">—</div><div class="k-meta" id="i-vac-s">—</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Bodegas por volumen</div></div>
+          <div class="panel-body" id="i-bod-bars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Distribución por tipo</div></div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <canvas id="dn-imp-tipo" width="108" height="108" role="img" aria-label="Tipos IMP">Tipos IMP.</canvas>
+              <div class="donut-legend" id="dl-imp-tipo"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel mb">
+        <div class="panel-head">
+          <div class="panel-title">Cruces por día</div>
+          <div class="panel-sub" id="i-trend-sub">—</div>
+        </div>
+        <div class="panel-body">
+          <div class="trend-wrap" id="i-trend-cols"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Operadores — Importación</div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Operador</th><th class="r">Cruces</th><th class="r">%</th><th>Bodegas</th></tr></thead>
+            <tbody id="i-ops-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░ EXPORTACION ░░░░ -->
+    <div class="page" id="page-exportacion">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Exportación</div>
+          <div class="ph-sub">Órdenes registradas · Todas las fechas</div>
+        </div>
+      </div>
+      <div class="kgrid k4">
+        <div class="kcard kG"><div class="k-label">Total órdenes</div><div class="k-value" id="e-tot">—</div></div>
+        <div class="kcard kG">
+          <div class="k-label">Cliente principal</div>
+          <div class="k-value-text" id="e-cli1">—</div>
+          <div class="k-meta" id="e-cli1-s">—</div>
+        </div>
+        <div class="kcard kN">
+          <div class="k-label">Destino principal</div>
+          <div class="k-value-text" id="e-dest1">—</div>
+          <div class="k-meta" id="e-dest1-s">—</div>
+        </div>
+        <div class="kcard kN"><div class="k-label">Otros clientes</div><div class="k-value" id="e-otros">—</div><div class="k-meta" id="e-otros-s">—</div></div>
+      </div>
+      <div class="g2e">
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Clientes</div></div>
+          <div class="panel-body" id="e-cli-bars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Destinos</div></div>
+          <div class="panel-body" id="e-dest-bars"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Operadores — Exportación</div></div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Operador</th><th class="r">Órdenes</th><th class="r">%</th><th>Clientes</th></tr></thead>
+            <tbody id="e-ops-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░ OPERADORES ░░░░ -->
+    <div class="page" id="page-operadores">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Operadores</div>
+          <div class="ph-sub">Actividad individual · Selecciona un operador para ver detalle</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Tipo</span>
+        <button class="filter-btn active" onclick="setOpsFilter('all',this)">Todos</button>
+        <button class="filter-btn" onclick="setOpsFilter('both',this)">IMP + EXP</button>
+        <button class="filter-btn" onclick="setOpsFilter('imp',this)">Solo IMP</button>
+        <button class="filter-btn" onclick="setOpsFilter('exp',this)">Solo EXP</button>
+        <select class="filter-select" id="ops-sort" onchange="renderOps()">
+          <option value="total">Ordenar: Total ↓</option>
+          <option value="imp">Ordenar: IMP ↓</option>
+          <option value="exp">Ordenar: EXP ↓</option>
+          <option value="name">Ordenar: A → Z</option>
+        </select>
+      </div>
+
+      <div class="op-detail" id="op-detail-panel">
+        <div class="op-detail-head">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="op-avatar-lg" id="op-det-av">—</div>
+            <div>
+              <div style="font-family:var(--fH);font-size:20px;font-weight:800;color:var(--white)" id="op-det-name">—</div>
+              <div style="font-family:var(--fM);font-size:10px;color:var(--smoke);margin-top:3px;letter-spacing:.6px" id="op-det-sub">—</div>
+            </div>
+          </div>
+          <button class="op-close" onclick="closeOpDetail()">✕</button>
+        </div>
+        <div class="op-stats-grid">
+          <div class="op-stat">
+            <div class="op-stat-label">Cruces IMP</div>
+            <div class="op-stat-value" style="color:var(--B3)" id="op-det-imp">—</div>
+          </div>
+          <div class="op-stat">
+            <div class="op-stat-label">Órdenes EXP</div>
+            <div class="op-stat-value" style="color:var(--G2)" id="op-det-exp">—</div>
+          </div>
+          <div class="op-stat">
+            <div class="op-stat-label">Total</div>
+            <div class="op-stat-value" id="op-det-tot">—</div>
+          </div>
+          <div class="op-stat">
+            <div class="op-stat-label">Tipo</div>
+            <div class="op-stat-value" style="font-size:13px;margin-top:4px" id="op-det-tipo">—</div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="sec-label">Bodegas IMP</div>
+          <div style="font-size:12px;color:var(--fog);font-family:var(--fM)" id="op-det-bodegas">—</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Ranking general</div>
+            <div class="panel-sub" id="ops-count-label">—</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span style="display:flex;align-items:center;gap:5px;font-family:var(--fM);font-size:9px;color:var(--fog);letter-spacing:.8px"><span style="width:6px;height:6px;border-radius:1px;background:var(--B2);display:inline-block"></span>IMP</span>
+            <span style="display:flex;align-items:center;gap:5px;font-family:var(--fM);font-size:9px;color:var(--fog);letter-spacing:.8px"><span style="width:6px;height:6px;border-radius:1px;background:var(--G2);display:inline-block"></span>EXP</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:28px">#</th>
+                <th>Operador</th>
+                <th class="r">IMP</th>
+                <th class="r">EXP</th>
+                <th class="r">Total</th>
+                <th>Tipo</th>
+                <th>Actividad</th>
+              </tr>
+            </thead>
+            <tbody id="ops-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ░░░░ TENDENCIA ░░░░ -->
+    <div class="page" id="page-tendencia">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Tendencia</div>
+          <div class="ph-sub">Análisis temporal · Comportamiento por jornada</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Vista</span>
+        <button class="filter-btn active" onclick="setTrendFilter('imp',this)">Importación</button>
+        <button class="filter-btn" onclick="setTrendFilter('exp',this)">Exportación</button>
+        <button class="filter-btn" onclick="setTrendFilter('all',this)">Combinado</button>
+      </div>
+      <div class="kgrid k4" id="trend-kpis"></div>
+      <div class="panel mb">
+        <div class="panel-head">
+          <div class="panel-title" id="trend-chart-title">Movimientos por día</div>
+          <div class="panel-sub" id="trend-chart-sub">—</div>
+        </div>
+        <div style="padding:16px 20px;position:relative;height:240px">
+          <canvas id="trend-chart" role="img" aria-label="Tendencia">Tendencia.</canvas>
+        </div>
+      </div>
+      <div class="g2e">
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Tipos de carga — IMP</div></div>
+          <div class="panel-body" id="trend-tipos"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Día pico</div></div>
+          <div style="text-align:center;padding:24px 20px">
+            <div style="font-family:var(--fM);font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:var(--smoke);margin-bottom:8px">Fecha más activa</div>
+            <div style="font-family:var(--fH);font-size:32px;font-weight:800;color:var(--G2);letter-spacing:-.5px" id="trend-peak-day">—</div>
+            <div style="font-family:var(--fM);font-size:11px;color:var(--smoke);margin-top:6px" id="trend-peak-val">—</div>
+            <div class="divider"></div>
+            <div id="trend-peak-br"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ SCRIPTS ══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ═══════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════ */
+const APP_ID  = 'c03c2f96-a0d0-4bcf-a0f7-70ca22112546';
+const API_KEY = 'V2-MIjZN-l76O8-Zpwku-sH3nr-OBju5-aGe55-5tI7x-zk0YB';
+const BASE    = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables`;
+
+let IMP = [], EXP = [];
+let hoyFilterState  = 'all';
+let opsFilterState  = 'all';
+let trendFilterState = 'imp';
+let trendChartInstance = null;
+
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+const el  = id => document.getElementById(id);
+const txt = (id, v) => { const e = el(id); if (e) e.textContent = v; };
+
+function count(arr, key) {
+  const m = {};
+  arr.forEach(r => {
+    const v = (r[key] || '').toString().trim().toUpperCase();
+    if (v) m[v] = (m[v] || 0) + 1;
+  });
+  return Object.entries(m).sort((a, b) => b[1] - a[1]);
+}
+const pct  = (v, t) => t ? Math.round(v / t * 100) + '%' : '0%';
+const pctN = (v, t) => t ? Math.round(v / t * 100) : 0;
+
+function todayStr() {
+  return new Date().toISOString().substring(0, 10);
+}
+function todayFull() {
+  return new Date().toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+}
+function fmtShort(d) {
+  try { return new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }); }
+  catch { return d; }
+}
+function fmtLong(d) {
+  try { return new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch { return d; }
+}
+
+function getDateStr(row, isExp) {
+  const f = (row.FECHA || '').toString().trim();
+  if (f.length >= 10) return f.substring(0, 10);
+  if (isExp) {
+    const l = (row.LAR || '').toString().trim();
+    if (l.length >= 10) return l.substring(0, 10);
+  }
+  return '';
+}
+
+/* ═══════════════════════════════════════
+   API — with CORS proxy fallback
+═══════════════════════════════════════ */
+async function fetchTable(name) {
+  txt('ld-status', `Cargando ${name}...`);
+  const url = `${BASE}/${encodeURIComponent(name)}/Action`;
+  const opts = {
+    method: 'POST',
+    headers: {
+      'applicationAccessKey': API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ Action: 'Find', Properties: {}, Rows: [] })
+  };
+  const resp = await fetch(url, opts);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} al cargar ${name}`);
+  const json = await resp.json();
+  return Array.isArray(json) ? json : (json.Rows || json.rows || []);
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+function goPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mob-item').forEach(b => b.classList.remove('active'));
+  el('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+/* ═══════════════════════════════════════
+   BAR HELPER
+═══════════════════════════════════════ */
+function renderBars(containerId, entries, total, color, topN = 10, labelW = 'w130') {
+  const top = entries.slice(0, topN);
+  const maxV = top[0] ? top[0][1] : 1;
+  let html = top.map(([k, v]) => {
+    const w = Math.round(v / maxV * 100);
+    return `<div class="bar-row">
+      <div class="bar-label ${labelW}" title="${k}">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
+      <div class="bar-num">${v}</div>
+      <div class="bar-pct">${pct(v, total)}</div>
+    </div>`;
+  }).join('');
+  const rest = entries.length - topN;
+  if (rest > 0) html += `<div class="more-label">+ ${rest} registros adicionales</div>`;
+  el(containerId).innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   DONUT HELPER
+═══════════════════════════════════════ */
+const COLORS = ['#1a6ed0', '#b8930c', '#0a8a5a', '#8896b0'];
+
+function renderDonut(canvasId, legendId, entries, total) {
+  const ctx = el(canvasId).getContext('2d');
+  const labels = entries.map(([k]) => k);
+  const data   = entries.map(([, v]) => v);
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: COLORS, borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: {
+      responsive: false, cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.parsed} (${pct(c.parsed, total)})` } }
+      }
+    }
+  });
+  el(legendId).innerHTML = entries.map(([k, v], i) => `
+    <div class="legend-row">
+      <div class="legend-swatch" style="background:${COLORS[i]}"></div>
+      <div class="legend-name">${k}</div>
+      <div class="legend-val">${v}</div>
+      <div class="legend-pct">${pct(v, total)}</div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   HOY PAGE
+═══════════════════════════════════════ */
+function renderHoy() {
+  const hoy = todayStr();
+  txt('hoy-fecha', todayFull());
+
+  const impHoy = IMP.filter(r => getDateStr(r, false) === hoy);
+  const expHoy = EXP.filter(r => getDateStr(r, true)  === hoy);
+
+  let items = [
+    ...impHoy.map(r => ({ ...r, _tipo: 'IMP' })),
+    ...expHoy.map(r => ({ ...r, _tipo: 'EXP' }))
+  ];
+
+  let filtered = items;
+  if (hoyFilterState === 'imp') filtered = items.filter(i => i._tipo === 'IMP');
+  if (hoyFilterState === 'exp') filtered = items.filter(i => i._tipo === 'EXP');
+
+  const tI = impHoy.length, tE = expHoy.length, tT = tI + tE;
+
+  // KPIs
+  el('hoy-kpis').innerHTML = `
+    <div class="kcard kE">
+      <div class="k-label">Total hoy</div>
+      <div class="k-value">${tT}</div>
+      <div class="k-meta">IMP + EXP</div>
+      <span class="k-badge">◉ Jornada actual</span>
+    </div>
+    <div class="kcard kB">
+      <div class="k-label">Cruces IMP</div>
+      <div class="k-value">${tI}</div>
+      <div class="k-meta">${pct(tI, tT || 1)} del total</div>
+    </div>
+    <div class="kcard kG">
+      <div class="k-label">Órdenes EXP</div>
+      <div class="k-value">${tE}</div>
+      <div class="k-meta">${pct(tE, tT || 1)} del total</div>
+    </div>
+    <div class="kcard kN">
+      <div class="k-label">Operadores activos</div>
+      <div class="k-value">${new Set([
+        ...impHoy.map(r => (r.OPERADOR || '').trim().toUpperCase()),
+        ...expHoy.map(r => (r.OPERADOR || '').trim().toUpperCase())
+      ].filter(Boolean)).size}</div>
+      <div class="k-meta">En turno hoy</div>
+    </div>`;
+
+  // Big number & desglose
+  const dI = hoyFilterState === 'exp' ? 0 : tI;
+  const dE = hoyFilterState === 'imp' ? 0 : tE;
+  const dT = dI + dE || 1;
+  txt('hoy-big', filtered.length);
+  txt('hoy-count-tag', filtered.length + ' movimientos');
+  txt('hoy-tl-sub', `${filtered.length} registros · ${hoy}`);
+
+  el('hoy-desglose').innerHTML = `
+    <div class="bar-row">
+      <div class="bar-label w90">Importación</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pctN(dI, dT)}%;background:var(--B2)"></div></div>
+      <div class="bar-num">${dI}</div>
+      <div class="bar-pct">${pct(dI, dT)}</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label w90">Exportación</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pctN(dE, dT)}%;background:var(--G2)"></div></div>
+      <div class="bar-num">${dE}</div>
+      <div class="bar-pct">${pct(dE, dT)}</div>
+    </div>`;
+
+  // Bodegas hoy
+  const bodsHoy = count(filtered.filter(i => i._tipo === 'IMP'), 'BODEGA');
+  if (bodsHoy.length) {
+    const mxB = bodsHoy[0][1];
+    el('hoy-bodegas-wrap').innerHTML = bodsHoy.slice(0, 6).map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-label w110" title="${k}">${k}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mxB*100)}%;background:var(--B2)"></div></div>
+        <div class="bar-num">${v}</div>
+      </div>`).join('');
+  } else {
+    el('hoy-bodegas-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Sin bodegas IMP registradas hoy</div></div>`;
+  }
+
+  // Ops hoy
+  const opsHoy = count(filtered, 'OPERADOR');
+  if (opsHoy.length) {
+    const mxO = opsHoy[0][1];
+    el('hoy-ops-wrap').innerHTML = opsHoy.map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-label w110" title="${k}">${k}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mxO*100)}%;background:var(--E)"></div></div>
+        <div class="bar-num">${v}</div>
+      </div>`).join('');
+  } else {
+    el('hoy-ops-wrap').innerHTML = `<div class="empty-state"><div class="empty-text">Sin operadores registrados hoy</div></div>`;
+  }
+
+  // Timeline
+  if (!filtered.length) {
+    el('hoy-timeline').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <div class="empty-text">Sin movimientos para hoy — <span style="font-family:var(--fM);font-size:10px;color:var(--smoke)">${hoy}</span></div>
+      </div>`;
+    return;
+  }
+
+  el('hoy-timeline').innerHTML = filtered.map(r => {
+    const isImp = r._tipo === 'IMP';
+    const op = (r.OPERADOR || '—').trim();
+    const extras = isImp
+      ? [r.BODEGA && `📦 ${r.BODEGA}`, r.TIPO && `${r.TIPO}`, r.TRACTOR && `🚛 ${r.TRACTOR}`, r.CAJA && `${r.CAJA}`].filter(Boolean)
+      : [r.CLIENTE && `🏢 ${r.CLIENTE}`, r.DESTINO && `📍 ${r.DESTINO}`, r.TIPO && `${r.TIPO}`].filter(Boolean);
+    return `
+      <div class="tl-item">
+        <div class="tl-spine">
+          <div class="tl-dot ${isImp ? 'imp' : 'exp'}"></div>
+          <div class="tl-spine-line"></div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-top">
+            <div class="tl-operator">${op}</div>
+            <span class="tag ${isImp ? 'tag-B' : 'tag-G'}">${isImp ? 'IMP' : 'EXP'}</span>
+          </div>
+          <div class="tl-meta">${extras.map(e => `<span>${e}</span>`).join('')}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setHoyFilter(type, btn) {
+  hoyFilterState = type;
+  document.querySelectorAll('#page-hoy .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHoy();
+}
+
+/* ═══════════════════════════════════════
+   GENERAL PAGE
+═══════════════════════════════════════ */
+function renderGeneral() {
+  const tI = IMP.length, tE = EXP.length, tot = tI + tE;
+  const allOps = new Set([
+    ...IMP.map(r => (r.OPERADOR || '').trim().toUpperCase()),
+    ...EXP.map(r => (r.OPERADOR || '').trim().toUpperCase())
+  ].filter(Boolean));
+
+  const bods  = count(IMP, 'BODEGA');
+  const tipos = count(IMP, 'TIPO');
+  const clis  = count(EXP, 'CLIENTE');
+  const dests = count(EXP, 'DESTINO');
+
+  // Op counts
+  const ic = {}, ec = {};
+  IMP.forEach(r => { const k = (r.OPERADOR||'').trim().toUpperCase(); if(k) ic[k]=(ic[k]||0)+1; });
+  EXP.forEach(r => { const k = (r.OPERADOR||'').trim().toUpperCase(); if(k) ec[k]=(ec[k]||0)+1; });
+  const opArr = [...new Set([...Object.keys(ic),...Object.keys(ec)])]
+    .map(k => ({ n:k, imp:ic[k]||0, exp:ec[k]||0, tot:(ic[k]||0)+(ec[k]||0) }))
+    .sort((a,b) => b.tot - a.tot);
+
+  // Dates
+  const impByDay = {};
+  IMP.forEach(r => { const d = getDateStr(r,false); if(d) impByDay[d]=(impByDay[d]||0)+1; });
+  const days = Object.keys(impByDay).sort();
+
+  txt('g-imp', tI); txt('g-exp', tE); txt('g-tot', tot);
+  txt('g-days', days.length);
+  txt('g-exp-s', 'Destinos: ' + (dests.slice(0,2).map(([k])=>k).join(', ')||'—'));
+  txt('g-ops-s', allOps.size + ' operadores registrados');
+  txt('g-range', days.length ? fmtShort(days[0]) + ' → ' + fmtShort(days[days.length-1]) : '—');
+
+  if (bods[0]) {
+    txt('g-bod-tag', bods[0][0]);
+    txt('gms-1', bods[0][0]); txt('gms-1s', bods[0][1] + ' · ' + pct(bods[0][1], tI));
+    if (bods[1]) { txt('gms-2', bods[1][0]); txt('gms-2s', bods[1][1] + ' cruces'); }
+    const rest = bods.slice(2).reduce((s,[,v])=>s+v, 0);
+    txt('gms-n', rest); txt('gms-ns', (bods.length-2) + ' bodegas más');
+    txt('g-bod-sub', bods.length + ' bodegas · ' + tI + ' cruces totales');
+  }
+  if (clis[0]) txt('g-cli-tag', clis[0][0] + ' · ' + pct(clis[0][1], tE));
+
+  renderBars('g-bod-bars', bods, tI, 'var(--B2)', 8);
+  renderBars('g-cli-bars', clis, tE, 'var(--G2)', 6, 'w110');
+  renderDonut('dn-gen-tipo', 'dl-gen-tipo', tipos.slice(0,4), tI);
+
+  // Top ops
+  const mx = opArr[0]?.tot || 1;
+  el('g-top-ops').innerHTML = opArr.slice(0,6).map(o => {
+    const wi = Math.round(o.imp/mx*100), we = Math.round(o.exp/mx*100);
+    return `<div class="bar-row">
+      <div class="bar-label w110">${o.n}</div>
+      <div class="bar-track" style="display:flex;gap:1px;background:var(--slate);height:4px">
+        <div style="width:${wi}%;background:var(--B2);height:4px;border-radius:1px 0 0 1px"></div>
+        <div style="width:${we}%;background:var(--G2);height:4px;border-radius:0 1px 1px 0"></div>
+      </div>
+      <div class="bar-num">${o.tot}</div>
+      <div class="bar-pct" style="display:flex;gap:3px;font-size:9px">
+        <span style="color:var(--B3)">${o.imp}</span>/<span style="color:var(--G2)">${o.exp}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const topB = bods[0], topC = clis[0];
+  const bimod = opArr.filter(o=>o.imp>0&&o.exp>0).length;
+  const topOp = opArr[0];
+  el('ins-1').innerHTML = topB ? `<strong>${topB[0]}</strong> concentra ${topB[1]} de ${tI} cruces (${pct(topB[1],tI)}). Alta dependencia de una sola bodega.` : '—';
+  el('ins-2').innerHTML = topC ? `<strong>${topC[0]}</strong> representa ${topC[1]} de ${tE} órdenes (${pct(topC[1],tE)}). Concentración crítica de cliente.` : '—';
+  el('ins-3').innerHTML = `<strong>${bimod} operadores</strong> activos en IMP y EXP. Líder: <strong>${topOp?.n||'—'}</strong> · ${topOp?.imp||0} IMP + ${topOp?.exp||0} EXP.`;
+}
+
+/* ═══════════════════════════════════════
+   IMP PAGE
+═══════════════════════════════════════ */
+function renderImp() {
+  const tI = IMP.length;
+  const tipos = count(IMP, 'TIPO');
+  const bods  = count(IMP, 'BODEGA');
+  const cjc  = tipos.find(([k])=>k.includes('CJ')&&k.includes('CARG'))?.[1] || 0;
+  const pltc = tipos.find(([k])=>k.includes('PLT')&&k.includes('CARG'))?.[1] || 0;
+  const vac  = tI - cjc - pltc;
+
+  txt('i-tot', tI);
+  txt('i-cjc', cjc);  txt('i-cjc-s',  pct(cjc,  tI));
+  txt('i-pltc', pltc); txt('i-pltc-s', pct(pltc, tI));
+  txt('i-vac',  vac);  txt('i-vac-s',  pct(vac,  tI));
+
+  renderBars('i-bod-bars', bods, tI, 'var(--B2)', 12);
+  renderDonut('dn-imp-tipo', 'dl-imp-tipo', tipos.slice(0,4), tI);
+
+  // Trend cols
+  const byDay = {};
+  IMP.forEach(r => { const d = getDateStr(r,false); if(d) byDay[d]=(byDay[d]||0)+1; });
+  const sortedDays = Object.keys(byDay).sort();
+  const mx = Math.max(...Object.values(byDay), 1);
+  txt('i-trend-sub', sortedDays.length + ' días · ' + tI + ' cruces totales');
+
+  el('i-trend-cols').innerHTML = sortedDays.map(d => {
+    const v = byDay[d];
+    const h = Math.max(4, Math.round(v / mx * 82));
+    const shade = v === mx ? '#104ea0' : v >= mx*.75 ? '#1a6ed0' : v >= mx*.5 ? '#2878d8' : '#4fa3ff';
+    return `<div class="trend-col">
+      <div class="trend-val">${v}</div>
+      <div class="trend-bar" style="height:${h}px;background:${shade}"></div>
+      <div class="trend-lbl">${fmtShort(d)}</div>
+    </div>`;
+  }).join('');
+
+  // Ops table
+  const ic = {};
+  IMP.forEach(r => { const k=(r.OPERADOR||'').trim().toUpperCase(); if(k) ic[k]=(ic[k]||0)+1; });
+  el('i-ops-tbody').innerHTML = Object.entries(ic)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v]) => {
+      const bds = [...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.BODEGA||'').trim()))].slice(0,2).join(', ');
+      return `<tr>
+        <td><span class="av av-B">${k.substring(0,2)}</span>${k}</td>
+        <td class="r" style="color:var(--B3)">${v}</td>
+        <td class="r">${pct(v,tI)}</td>
+        <td style="font-family:var(--fM);font-size:11px;color:var(--smoke)">${bds}</td>
+      </tr>`;
+    }).join('');
+}
+
+/* ═══════════════════════════════════════
+   EXP PAGE
+═══════════════════════════════════════ */
+function renderExp() {
+  const tE = EXP.length;
+  const clis  = count(EXP, 'CLIENTE');
+  const dests = count(EXP, 'DESTINO');
+  const otros = clis.slice(1).reduce((s,[,v])=>s+v, 0);
+
+  txt('e-tot', tE);
+  if (clis[0])  { txt('e-cli1',  clis[0][0]);  txt('e-cli1-s',  clis[0][1]  + ' órdenes · ' + pct(clis[0][1],  tE)); }
+  if (dests[0]) { txt('e-dest1', dests[0][0]); txt('e-dest1-s', dests[0][1] + ' órdenes · ' + pct(dests[0][1], tE)); }
+  txt('e-otros', otros);
+  txt('e-otros-s', (clis.length-1) + ' otros clientes');
+
+  renderBars('e-cli-bars',  clis,  tE, 'var(--G2)', 7, 'w110');
+  renderBars('e-dest-bars', dests, tE, 'var(--G)',  5, 'w110');
+
+  const ec = {};
+  EXP.forEach(r => { const k=(r.OPERADOR||'').trim().toUpperCase(); if(k) ec[k]=(ec[k]||0)+1; });
+  el('e-ops-tbody').innerHTML = Object.entries(ec)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v]) => {
+      const cs = [...new Set(EXP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===k).map(r=>(r.CLIENTE||'').trim()))].slice(0,2).join(', ');
+      return `<tr>
+        <td><span class="av av-G">${k.substring(0,2)}</span>${k}</td>
+        <td class="r" style="color:var(--G2)">${v}</td>
+        <td class="r">${pct(v,tE)}</td>
+        <td style="font-family:var(--fM);font-size:11px;color:var(--smoke)">${cs}</td>
+      </tr>`;
+    }).join('');
+}
+
+/* ═══════════════════════════════════════
+   OPERATORS PAGE
+═══════════════════════════════════════ */
+function buildOpData() {
+  const ic = {}, ec = {};
+  IMP.forEach(r => { const k=(r.OPERADOR||'').trim().toUpperCase(); if(k) ic[k]=(ic[k]||0)+1; });
+  EXP.forEach(r => { const k=(r.OPERADOR||'').trim().toUpperCase(); if(k) ec[k]=(ec[k]||0)+1; });
+  return [...new Set([...Object.keys(ic),...Object.keys(ec)])]
+    .map(k => ({ n:k, imp:ic[k]||0, exp:ec[k]||0, tot:(ic[k]||0)+(ec[k]||0) }));
+}
+
+function renderOps() {
+  let ops = buildOpData();
+
+  if (opsFilterState === 'both') ops = ops.filter(o => o.imp>0 && o.exp>0);
+  else if (opsFilterState === 'imp') ops = ops.filter(o => o.imp>0 && o.exp===0);
+  else if (opsFilterState === 'exp') ops = ops.filter(o => o.exp>0 && o.imp===0);
+
+  const sort = el('ops-sort')?.value || 'total';
+  if (sort === 'imp')  ops.sort((a,b) => b.imp - a.imp);
+  else if (sort === 'exp')  ops.sort((a,b) => b.exp - a.exp);
+  else if (sort === 'name') ops.sort((a,b) => a.n.localeCompare(b.n));
+  else ops.sort((a,b) => b.tot - a.tot);
+
+  txt('ops-count-label', ops.length + ' operadores · selecciona para ver detalle');
+  const mx = ops[0]?.tot || 1;
+
+  el('ops-tbody').innerHTML = ops.map((o, i) => {
+    let tagCls, avCls;
+    if (o.imp>0 && o.exp>0) { tagCls='tag-G'; avCls='av-G'; }
+    else if (o.imp>0) { tagCls='tag-B'; avCls='av-B'; }
+    else { tagCls='tag-E'; avCls='av-E'; }
+    const tipo = o.imp>0&&o.exp>0 ? 'IMP+EXP' : o.imp>0 ? 'Solo IMP' : 'Solo EXP';
+    const wi = Math.round(o.imp/mx*80), we = Math.round(o.exp/mx*80);
+    const escaped = JSON.stringify(o).replace(/"/g, '&quot;');
+    return `<tr onclick="openOpDetail(${escaped})">
+      <td style="font-family:var(--fM);font-size:10px;color:var(--smoke)">${i+1}</td>
+      <td><span class="av ${avCls}">${o.n.substring(0,2)}</span>${o.n}</td>
+      <td class="r" style="color:var(--B3)">${o.imp}</td>
+      <td class="r" style="color:var(--G2)">${o.exp}</td>
+      <td class="r">${o.tot}</td>
+      <td><span class="tag ${tagCls}">${tipo}</span></td>
+      <td>
+        <div class="mini-bar">
+          ${o.imp ? `<div class="mini-seg" style="width:${wi}px;background:var(--B2)"></div>` : ''}
+          ${o.exp ? `<div class="mini-seg" style="width:${we}px;background:var(--G2)"></div>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--smoke);padding:24px;font-family:var(--fM)">Sin resultados</td></tr>';
+}
+
+function setOpsFilter(type, btn) {
+  opsFilterState = type;
+  document.querySelectorAll('#page-operadores .filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOps();
+}
+
+function openOpDetail(o) {
+  txt('op-det-av',    o.n.substring(0,2));
+  txt('op-det-name',  o.n);
+  const tipo = o.imp>0&&o.exp>0 ? 'IMP + EXP' : o.imp>0 ? 'Solo Importación' : 'Solo Exportación';
+  txt('op-det-sub',   tipo + ' · ' + o.tot + ' movimientos totales');
+  txt('op-det-imp',   o.imp);
+  txt('op-det-exp',   o.exp);
+  txt('op-det-tot',   o.tot);
+  txt('op-det-tipo',  tipo);
+  const bods = [...new Set(IMP.filter(r=>(r.OPERADOR||'').trim().toUpperCase()===o.n).map(r=>(r.BODEGA||'').trim()).filter(Boolean))];
+  txt('op-det-bodegas', bods.length ? bods.join(' · ') : 'Sin registros IMP');
+  const panel = el('op-detail-panel');
+  panel.classList.add('open');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function closeOpDetail() { el('op-detail-panel').classList.remove('open'); }
+
+/* ═══════════════════════════════════════
+   TREND PAGE
+═══════════════════════════════════════ */
+function renderTrend() {
+  const iBD = {}, eBD = {};
+  IMP.forEach(r => { const d=getDateStr(r,false); if(d) iBD[d]=(iBD[d]||0)+1; });
+  EXP.forEach(r => { const d=getDateStr(r,true);  if(d) eBD[d]=(eBD[d]||0)+1; });
+  const days = [...new Set([...Object.keys(iBD),...Object.keys(eBD)])].sort();
+  const labels = days.map(d => fmtShort(d));
+
+  let d1=[], d2=[], c1, c2, title, sub;
+  if (trendFilterState === 'imp') {
+    d1=days.map(d=>iBD[d]||0); c1='#1a6ed0';
+    title='Cruces por día — Importación'; sub='Solo registros IMP';
+  } else if (trendFilterState === 'exp') {
+    d1=days.map(d=>eBD[d]||0); c1='#b8930c';
+    title='Órdenes por día — Exportación'; sub='Solo registros EXP';
+  } else {
+    d1=days.map(d=>iBD[d]||0); d2=days.map(d=>eBD[d]||0);
+    c1='#1a6ed0'; c2='#b8930c';
+    title='Movimientos por día — IMP + EXP'; sub='Azul = IMP · Dorado = EXP';
+  }
+  txt('trend-chart-title', title);
+  txt('trend-chart-sub', sub);
+
+  if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+
+  const datasets = [{
+    label: 'IMP', data: d1,
+    backgroundColor: c1 + '18', borderColor: c1,
+    borderWidth: 1.5, pointBackgroundColor: c1, pointRadius: 3,
+    tension: 0.35, fill: true
+  }];
+  if (trendFilterState === 'all') {
+    datasets.push({
+      label: 'EXP', data: d2,
+      backgroundColor: c2 + '18', borderColor: c2,
+      borderWidth: 1.5, pointBackgroundColor: c2, pointRadius: 3,
+      tension: 0.35, fill: true
+    });
+  }
+
+  trendChartInstance = new Chart(el('trend-chart').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: trendFilterState === 'all',
+          labels: { color: '#8896b0', font: { size: 10, family: 'IBM Plex Mono' } }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#4a5570', font: { size: 9, family: 'IBM Plex Mono' } },
+          grid: { color: 'rgba(255,255,255,0.03)' }
+        },
+        y: {
+          ticks: { color: '#4a5570', font: { size: 9, family: 'IBM Plex Mono' }, stepSize: 1 },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+
+  // Tipos bars
+  const tipos = count(IMP, 'TIPO'), tI = IMP.length;
+  const mx = tipos[0]?.[1] || 1;
+  el('trend-tipos').innerHTML = tipos.map(([k,v]) => `
+    <div class="bar-row">
+      <div class="bar-label w110">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mx*100)}%;background:var(--B2)"></div></div>
+      <div class="bar-num">${v}</div>
+      <div class="bar-pct">${pct(v,tI)}</div>
+    </div>`).join('');
+
+  // Peak
+  const peak = days.reduce((best, d) => {
+    const v = (iBD[d]||0) + (eBD[d]||0);
+    return v > (best.v||0) ? { d, v } : best;
+  }, {});
+  txt('trend-peak-day', fmtShort(peak.d) || '—');
+  txt('trend-peak-val', (peak.v||0) + ' movimientos en ese día');
+  el('trend-peak-br').innerHTML = peak.d ? `
+    <div class="bar-row">
+      <div class="bar-label w90">IMP</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pctN(iBD[peak.d]||0,peak.v)}%;background:var(--B2)"></div></div>
+      <div class="bar-num">${iBD[peak.d]||0}</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label w90">EXP</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pctN(eBD[peak.d]||0,peak.v)}%;background:var(--G2)"></div></div>
+      <div class="bar-num">${eBD[peak.d]||0}</div>
+    </div>` : '';
+
+  // KPIs
+  const tI2=IMP.length, tE2=EXP.length;
+  const daysI=days.filter(d=>iBD[d]).length || 1;
+  const daysE=days.filter(d=>eBD[d]).length || 1;
+  el('trend-kpis').innerHTML = `
+    <div class="kcard kB">
+      <div class="k-label">Promedio IMP / día</div>
+      <div class="k-value">${Math.round(tI2/daysI)}</div>
+      <div class="k-meta">cruces por jornada</div>
+    </div>
+    <div class="kcard kG">
+      <div class="k-label">Promedio EXP / día</div>
+      <div class="k-value">${Math.round(tE2/daysE)}</div>
+      <div class="k-meta">órdenes por jornada</div>
+    </div>
+    <div class="kcard kN">
+      <div class="k-label">Días con datos</div>
+      <div class="k-value">${days.length}</div>
+      <div class="k-meta">${days.length ? fmtShort(days[0]) + ' → ' + fmtShort(days[days.length-1]) : '—'}</div>
+    </div>
+    <div class="kcard kE">
+      <div class="k-label">Pico total</div>
+      <div class="k-value">${peak.v||0}</div>
+      <div class="k-meta">${fmtLong(peak.d)||'—'}</div>
+    </div>`;
+}
+
+function setTrendFilter(type, btn) {
+  trendFilterState = type;
+  document.querySelectorAll('#page-tendencia .filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrend();
+}
+
+/* ═══════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════ */
+function renderAll() {
+  renderHoy();
+  renderGeneral();
+  renderImp();
+  renderExp();
+  renderOps();
+  renderTrend();
+  txt('upd-time', new Date().toLocaleString('es-MX', {
+    day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
+  }));
+}
+
+/* ═══════════════════════════════════════
+   REFRESH
+═══════════════════════════════════════ */
+async function doRefresh() {
+  const btn = el('rfbtn');
+  btn.classList.add('spinning');
+  try {
+    [IMP, EXP] = await Promise.all([
+      fetchTable('IMPORTACION'),
+      fetchTable('EXPORTACION')
+    ]);
+    if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+    renderAll();
+  } catch(e) {
+    alert('Error al actualizar: ' + e.message);
+  }
+  btn.classList.remove('spinning');
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+async function init() {
+  try {
+    // Load both tables in parallel for speed
+    [IMP, EXP] = await Promise.all([
+      fetchTable('IMPORTACION'),
+      fetchTable('EXPORTACION')
+    ]);
+    renderAll();
+    el('loader').style.display = 'none';
+    el('app').style.display = 'block';
+    // Auto-refresh every 5 minutes
+    setInterval(doRefresh, 5 * 60 * 1000);
+  } catch(e) {
+    txt('ld-status', 'Error: ' + e.message);
+    el('ld-status').style.color = '#d42038';
+    console.error(e);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
